@@ -1,0 +1,40 @@
+github_token = "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"
+github_username = "quhxuxm"
+[proxy]
+url = "http://127.0.0.1:10080"
+[projects.rgs]
+github_repo_owner = "quhxuxm"
+github_repo_branch = "6.9.0-develop"
+project_local_path = "/Users/quhao/Workspace/Git/rgs"
+github_repo_url = "https://github.com/igt-playcasino/rgs.git"
+configuration_properties = { }
+build_cmd = ""
+startup_cmd = ""
+debug_cmd = ""
+[projects.gsr]
+github_repo_owner = "quhxuxm"
+github_repo_branch = "6.9.0-develop"
+project_local_path = "/Users/quhao/Workspace/Git/gsr"
+github_repo_url = "https://github.com/igt-playcasino/gsr.git"
+configuration_properties = { }
+build_cmd = ""
+startup_cmd = ""
+debug_cmd = ""
+[projects.competition]
+github_repo_owner = "quhxuxm"
+github_repo_branch = "6.9.0-develop"
+project_local_path = "/Users/quhao/Workspace/Git/competition"
+github_repo_url = "https://github.com/igt-playcasino/competition.git"
+configuration_properties = { }
+build_cmd = ""
+startup_cmd = ""
+debug_cmd = ""
+[projects.cfgs]
+github_repo_owner = "quhxuxm"
+github_repo_branch = "6.9.0-develop"
+project_local_path = "/Users/quhao/Workspace/Git/cfgs"
+github_repo_url = "https://github.com/igt-playcasino/cfgs.git"
+configuration_properties = { }
+build_cmd = ""
+startup_cmd = ""
+debug_cmd = ""
