@@ -38,6 +38,7 @@ pub struct ProjectConfig {
     build_cmd: String,
     startup_cmd: String,
     debug_cmd: String,
+    build_cmd_base_dir: PathBuf,
 }
 
 
@@ -72,6 +73,10 @@ impl ProjectConfig {
 
     pub fn debug_cmd(&self) -> &str {
         &self.debug_cmd
+    }
+
+    pub fn build_cmd_base_dir(&self) -> &Path {
+        &self.build_cmd_base_dir
     }
 }
 
