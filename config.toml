@@ -1,7 +1,6 @@
-github_token = "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"
+github_token = """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"""
 github_username = "quhxuxm"
-[proxy]
-url = "http://127.0.0.1:10080"
+proxy.url = "http://127.0.0.1:10080"
 [projects.rgs]
 github_repo_owner = "quhxuxm"
 github_repo_branch = "6.9.0-develop"
