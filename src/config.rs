@@ -1,14 +1,18 @@
+use std::collections::HashMap;
+use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ProjectInstallerConfig{
+pub struct InstallerConfig {
     github_token: String,
     github_username: String,
+    projects:HashMap<String,ProjectConfig>
 }
 
-pub struct RepoConfig{
-    repo_name: String,
-    repo_owner: String,
-    repo_branch: String,
-    repo_path: String,
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ProjectConfig{
+    github_repo_owner: String,
+    github_repo_branch: String,
+    project_local_path: PathBuf,
+    github_repo_url: String,
 }
