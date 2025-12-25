@@ -30,10 +30,13 @@ fn get_source_code_from_github(tool_config: &ToolConfig, project_name: &str, pro
 
 ///使用 Maven 构建工程
 fn build_source_code(project_config: &ProjectConfig) -> Result<()> {
-    let mut command = Command::new("mvn");
-    command.arg("clean").arg("package").current_dir(project_config.build_cmd_base_dir());
-    let command_output = command.output()?;
-    io::stdout().write_all(&command_output.stdout)?;
+    if let Some(build_config) = project_config.build_config() {
+        let mut command = Command::new("mvn");
+        command.arg("clean").arg("package").current_dir(build_config.build_cmd_base_dir());
+        let command_output = command.output()?;
+        io::stdout().write_all(&command_output.stdout)?;
+    }
+
     Ok(())
 }
 
