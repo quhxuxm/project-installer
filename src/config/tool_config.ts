@@ -31,4 +31,16 @@ class ToolConfig {
     set projects(value: Map<string, ProjectConfig>) {
         this._projects = value;
     }
+
+    public addProject(project: ProjectConfig):void {
+        this._projects.set(project.projectId, project);
+    }
+
+    public getProject(projectId: string): ProjectConfig|undefined{
+        return this._projects.get(projectId);
+    }
+
+    public getAllProjects(): ProjectConfig[] {
+        return Array.from(this._projects.values());
+    }
 }
