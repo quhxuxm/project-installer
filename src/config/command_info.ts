@@ -1,12 +1,10 @@
-class CommandInfo {
-    private _cmd: string;
-    private _args: string[];
-
+export class CommandInfo {
     constructor(cmd: string, args: string[]) {
         this._cmd = cmd;
         this._args = args;
     }
 
+    private _cmd: string;
 
     get cmd(): string {
         return this._cmd;
@@ -15,6 +13,8 @@ class CommandInfo {
     set cmd(value: string) {
         this._cmd = value;
     }
+
+    private _args: string[];
 
     get args(): string[] {
         return this._args;
