@@ -1,10 +1,23 @@
 import {ProjectConfig} from "./project_config.ts";
+import {ProxyConfig} from "./proxy_config.ts";
 
 export class ToolConfig {
     constructor(githubUsername: string, githubToken: string) {
         this._githubUsername = githubUsername;
         this._githubToken = githubToken;
         this._projects = new Map<string, ProjectConfig>();
+        this._proxyConfig = null;
+    }
+
+    private _proxyConfig: ProxyConfig | null;
+
+    public get proxyConfig(): ProxyConfig | null {
+        return this._proxyConfig;
+    }
+
+
+    set proxyConfig(value: ProxyConfig | null) {
+        this._proxyConfig = value;
     }
 
     private _githubUsername: string;

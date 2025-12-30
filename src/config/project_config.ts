@@ -3,7 +3,7 @@ import {CommandInfo} from "./command_info.ts";
 export class ProjectConfig {
     constructor(projectId: string, githubRepoUrl: string, githubBranch: string, projectLocalPath: string) {
         this._projectId = projectId;
-        this._projectDescription = null;
+        this._description = null;
         this._githubRepoUrl = githubRepoUrl;
         this._githubBranch = githubBranch;
         this._buildCommand = null;
@@ -22,14 +22,14 @@ export class ProjectConfig {
         this._projectId = value;
     }
 
-    private _projectDescription: string | null;
+    private _description: string | null;
 
-    get projectDescription(): string | null {
-        return this._projectDescription;
+    get description(): string | null {
+        return this._description;
     }
 
-    set projectDescription(value: string) {
-        this._projectDescription = value;
+    set description(value: string) {
+        this._description = value;
     }
 
     private _githubRepoUrl: string;
