@@ -55,6 +55,11 @@ const topLevelMenuItems = ref<MenuItem[]>([
         route: '/maven'
       },
       {
+        label: 'Kafka',
+        icon: 'pi pi-shop',
+        route: '/kafka'
+      },
+      {
         label: 'Node JS',
         icon: 'pi pi-receipt',
         route: '/nodejs'
