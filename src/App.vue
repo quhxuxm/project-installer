@@ -6,6 +6,7 @@ import {invoke} from "@tauri-apps/api/core";
 import {ApplicationState} from "./messages/application_state.ts";
 import {APPLICATION_STATE} from "./common.ts";
 
+
 let applicationState = await invoke<ApplicationState>("load_application_state");
 
 provide(APPLICATION_STATE, applicationState);
