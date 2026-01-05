@@ -27,7 +27,7 @@ watch(() => currentRoute.params.id as string, (newProjectId, _) => {
 <template>
 
   <ScrollPanel class="h-full px-4">
-    <h1 class="text-2xl text-primary mb-4">{{ currentProject?.description ?? '' }}</h1>
+    <h1 class="text-2xl text-primary mb-4">{{ currentProject?.name ?? '' }}</h1>
     <div class="flex flex-col gap-4">
       <Fieldset class="text-xl" legend="Repository configuration" toggleable>
         <div class="flex flex-col gap-4">

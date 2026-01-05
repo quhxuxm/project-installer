@@ -68,7 +68,7 @@ onMounted(async () => {
 <template>
   <div class="h-screen w-screen flex flex-row space-x-4 p-4">
     <Menu :model="menuItems"
-          class="flex flex-col justify-center h-full w-full md:w-80 overflow-y-auto px-4">
+          class="flex flex-col justify-start h-full w-full md:w-80 overflow-y-auto px-4">
       <template #start>
                 <span class="inline-flex items-center gap-1 px-2 py-2">
                     <span class="text-xl font-black">
