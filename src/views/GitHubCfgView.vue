@@ -1,16 +1,14 @@
-<script lang="ts" setup>
+<script setup>
 
 import {inject, ref} from "vue";
-import {GlobalStatus} from "../value/status.ts";
 import ScrollPanel from "primevue/scrollpanel";
 import {Button, InputText} from "primevue";
 import Textarea from 'primevue/textarea';
 
+let globalState = inject("GLOBAL_STATUS");
 
-let globalStatus = inject<GlobalStatus>("GLOBAL_STATUS");
-
-let githubUsername = ref<string>(globalStatus?.github?.username ?? "");
-let githubToken = ref<string>(globalStatus?.github?.token ?? "");
+let githubUsername = ref(globalState.github.username());
+let githubToken = ref(globalState.github.token);
 
 
 </script>

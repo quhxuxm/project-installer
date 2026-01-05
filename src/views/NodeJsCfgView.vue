@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 
 </script>
 
@@ -7,6 +7,6 @@
 </style>
 
 <template>
-Java configuration view
+  Node JS configuration view
 </template>
 

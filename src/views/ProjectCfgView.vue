@@ -1,20 +1,20 @@
-<script lang="ts" setup>
+<script setup>
 import {useRoute} from "vue-router";
 import {inject, ref, watch} from "vue";
-import {GlobalStatus, ProjectStatus} from "../value/status.ts";
 import ScrollPanel from "primevue/scrollpanel";
 import {Button, DataTable, InputText} from "primevue";
 import Fieldset from "primevue/fieldset";
 import Column from 'primevue/column';
+import {InjectionKeys} from "../common.js";
 
 let currentRoute = useRoute();
 
-let globalStatus = inject<GlobalStatus>("GLOBAL_STATUS");
+let globalState = inject(InjectionKeys.GLOBAL_STATE);
 
-let currentProject = ref<ProjectStatus | undefined>(globalStatus?.projects.get(currentRoute.params.id as string));
+let currentProject = ref(globalState.projects.get(currentRoute.params.id));
 
-watch(() => currentRoute.params.id as string, (newProjectId, _) => {
-  currentProject.value = globalStatus?.projects.get(newProjectId)
+watch(() => currentRoute.params.id, (newProjectId, _) => {
+  currentProject.value = globalState.projects.get(newProjectId)
 });
 
 </script>

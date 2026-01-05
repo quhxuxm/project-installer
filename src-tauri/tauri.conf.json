@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "project-management-tool",
   "version": "0.1.0",
-  "identifier": "com.quhao.project-management-tool",
+  "identifier": "com.quh.project-management-tool",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
