@@ -43,3 +43,17 @@ run_command.command = "mvn-pas"
 run_command.args = ["clean", "install", "-DskipTests"]
 debug_command.command = "mvn-pas"
 debug_command.args = ["clean", "install", "-DskipTests"]
+
+[projects.nss]
+name = "NSS Service"
+description = "NSS Service is also named as native system service"
+github_repo_url = "https://www.github.com/quhxuxm/nss.git"
+github_branch = "6.9-develop"
+local_repo_path = "/path/to/local/nss"
+startup_dependencies = ["nss-dp1", "nss-dp2"]
+build_command.command = "mvn-nss"
+build_command.args = ["clean", "install", "-DskipTests"]
+run_command.command = "mvn-nss"
+run_command.args = ["clean", "install", "-DskipTests"]
+debug_command.command = "mvn-nss"
+debug_command.args = ["clean", "install", "-DskipTests"]

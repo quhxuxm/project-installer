@@ -27,7 +27,12 @@ fn generate_application_state_message(
                     name: v.name().map(|i| i.to_owned()),
                     description: v.description().map(|i| i.to_owned()),
                     github_repo_url: v.github_repo_url().map(|i| i.to_owned()),
-                    github_branches: vec![],
+                    github_branches: vec![
+                        "6.9.0-release".to_string(),
+                        "6.10.0-release".to_string(),
+                        "6.9-develop".to_string(),
+                        "6.10.0-develop".to_string(),
+                    ],
                     configured_github_branch: v.github_branch().map(|i| i.to_owned()),
                     local_repo_path: v.local_repo_path().map(|i| i.to_owned()),
                     build_command: v.build_command().map(|i| {

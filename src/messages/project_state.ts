@@ -8,6 +8,7 @@ export type ProjectState = {
     runCommand: CommandState | null;
     debugCommand: CommandState | null;
     githubRepoUrl: string | null;
+    githubBranches: string[];
     localRepoPath: string | null;
     configuredGithubBranch: string | null;
     backendProcessId: number | null;
