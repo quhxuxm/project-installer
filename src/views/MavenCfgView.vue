@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 
 </script>
 
@@ -7,6 +7,6 @@
 </style>
 
 <template>
-  Maven configuration view
+Maven configuration view
 </template>
 

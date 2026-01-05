@@ -1,15 +1,15 @@
 import {createApp} from "vue";
-import App from "./App.vue";
-import JavaCfgView from "./views/JavaCfgView.vue";
-import MavenCfgView from "./views/MavenCfgView.vue";
-import NodeJsCfgView from "./views/NodeJsCfgView.vue";
-import GitHubCfgView from "./views/GitHubCfgView.vue";
-import ProjectCfgView from "./views/ProjectCfgView.vue";
-import {createMemoryHistory, createRouter} from "vue-router";
 import PrimeVue from 'primevue/config';
 import Aura from '@primeuix/themes/aura';
 import "./style.css";
 import 'primeicons/primeicons.css'
+import {createMemoryHistory, createRouter} from "vue-router";
+import GitHubCfgView from "./views/GitHubCfgView.vue";
+import ProjectCfgView from "./views/ProjectCfgView.vue";
+import JavaCfgView from "./views/JavaCfgView.vue";
+import MavenCfgView from "./views/MavenCfgView.vue";
+import NodeJsCfgView from "./views/NodeJsCfgView.vue";
+import App from "./App.vue";
 
 const routes = [
     {path: '/java', component: JavaCfgView},
@@ -29,4 +29,5 @@ app.use(PrimeVue, {
     theme: {
         preset: Aura
     }
-}).use(router).mount("#app");
+}).use(router);
+app.mount("#app");
