@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ErrorMessage {
-    reason: String,
+    pub reason: String,
 }
 
 impl From<String> for ErrorMessage {
