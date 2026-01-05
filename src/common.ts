@@ -1,4 +1,4 @@
-import {InjectionKey} from "vue";
+import {InjectionKey, Ref} from "vue";
 import {ApplicationState} from "./messages/application_state.ts";
 
-export const APPLICATION_STATE = Symbol() as InjectionKey<ApplicationState>
+export const APPLICATION_STATE = Symbol() as InjectionKey<Ref<ApplicationState | undefined, ApplicationState | undefined>>
