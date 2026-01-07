@@ -5,16 +5,21 @@ import ScrollPanel from "primevue/scrollpanel";
 import {Button, DataTable, InputText, Select} from "primevue";
 import Fieldset from "primevue/fieldset";
 import Column from 'primevue/column';
-import {APPLICATION_STATE} from "../common.ts";
-import {ProjectState} from "../messages/project_state.ts";
+import {APPLICATION_STATE, RETRIEVE_CODE_CMD, SAVE_PROJECT_CONFIG_CMD} from "../common.ts";
+import {ProjectStateOutput} from "../messages/project_state_output.ts";
+import {invoke} from "@tauri-apps/api/core";
+import {ApplicationStateOutput} from "../messages/application_state_output.ts";
+import {ProjectConfigInput} from "../messages/project_config_input.ts";
+import {GithubConfigInput} from "../messages/github_config_input.ts";
 
 let currentRoute = useRoute();
 
 let applicationState = inject(APPLICATION_STATE);
 
-let currentProject = ref<ProjectState | undefined>(applicationState?.value?.projects[currentRoute.params.id as string]);
+let currentProject = ref<ProjectStateOutput | undefined>(applicationState?.value?.projects[currentRoute.params.id as string]);
 
 
+let projectId = ref(currentRoute.params.id as string);
 let githubBranch = ref(currentProject?.value?.configuredGithubBranch);
 let githubRepoUrl = ref(currentProject?.value?.githubRepoUrl);
 let localRepoPath = ref(currentProject?.value?.localRepoPath);
@@ -24,6 +29,7 @@ let debugCommand = ref(`${currentProject?.value?.debugCommand?.cmd} ${currentPro
 
 
 watch(() => currentRoute.params.id as string, (newProjectId, _) => {
+  projectId.value = newProjectId;
   currentProject.value = applicationState?.value?.projects[newProjectId];
   githubBranch.value = currentProject?.value?.configuredGithubBranch;
   githubRepoUrl.value = currentProject?.value?.githubRepoUrl;
@@ -33,6 +39,49 @@ watch(() => currentRoute.params.id as string, (newProjectId, _) => {
   debugCommand.value = `${currentProject?.value?.debugCommand?.cmd} ${currentProject?.value?.debugCommand?.args?.join(' ') ?? ''}`;
 
 });
+
+async function save_project_config() {
+  let project_config: ProjectConfigInput = {
+    selectedGithubBranch: githubBranch.value ?? "",
+    githubRepoUrl: githubRepoUrl.value ?? "",
+    buildCommand: buildCommand.value ?? "",
+    runCommand: runCommand.value ?? "",
+    debugCommand: debugCommand.value ?? "",
+    localRepoPath: localRepoPath.value ?? "",
+    projectId: projectId.value
+  };
+  let updatedApplicationState = await invoke<ApplicationStateOutput>(SAVE_PROJECT_CONFIG_CMD, {
+    "projectConfigInput": project_config
+  });
+  console.log(updatedApplicationState)
+  if (applicationState) {
+    applicationState.value = updatedApplicationState;
+  }
+}
+
+async function retrieve_code() {
+  let github_config_input: GithubConfigInput = {
+    username: applicationState?.value?.github?.username ?? "",
+    token: applicationState?.value?.github?.token ?? ""
+  };
+  let project_config_input: ProjectConfigInput = {
+    selectedGithubBranch: githubBranch.value ?? "",
+    githubRepoUrl: githubRepoUrl.value ?? "",
+    buildCommand: buildCommand.value ?? "",
+    runCommand: runCommand.value ?? "",
+    debugCommand: debugCommand.value ?? "",
+    localRepoPath: localRepoPath.value ?? "",
+    projectId: projectId.value
+  };
+  let updatedApplicationState = await invoke<ApplicationStateOutput>(RETRIEVE_CODE_CMD, {
+    "githubConfigInput": github_config_input,
+    "projectConfigInput": project_config_input
+  });
+  console.log(updatedApplicationState)
+  if (applicationState) {
+    applicationState.value = updatedApplicationState;
+  }
+}
 </script>
 
 <style scoped>
@@ -120,7 +169,8 @@ watch(() => currentRoute.params.id as string, (newProjectId, _) => {
         </DataTable>
       </Fieldset>
       <div class="flex flex-row gap-4 m-4 justify-end">
-        <Button class="uppercase">Pull code</Button>
+        <Button class="uppercase" @click="save_project_config">Save</Button>
+        <Button class="uppercase" @click="retrieve_code">Pull code</Button>
         <Button class="uppercase">Build</Button>
         <Button class="uppercase">Run</Button>
         <Button class="uppercase">Debug</Button>

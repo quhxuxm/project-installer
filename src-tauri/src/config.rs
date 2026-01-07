@@ -58,7 +58,7 @@ impl CommandConfig {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct ProjectConfig {
     name: Option<String>,
     description: Option<String>,

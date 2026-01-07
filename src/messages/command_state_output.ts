@@ -1,4 +1,4 @@
-export type CommandState = {
+export type CommandStateOutput = {
     cmd: string | null;
     args: string[];
 }

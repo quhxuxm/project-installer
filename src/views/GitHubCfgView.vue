@@ -4,15 +4,29 @@ import {inject, ref} from "vue";
 import ScrollPanel from "primevue/scrollpanel";
 import {Button, InputText} from "primevue";
 import Textarea from 'primevue/textarea';
-import {APPLICATION_STATE} from "../common.ts";
-
+import {APPLICATION_STATE, SAVE_GITHUB_CONFIG_CMD} from "../common.ts";
+import {GithubConfigInput} from "../messages/github_config_input.ts";
+import {invoke} from "@tauri-apps/api/core";
+import {ApplicationStateOutput} from "../messages/application_state_output.ts";
 
 let applicationState = inject(APPLICATION_STATE);
 
 let githubUsername = ref<string>(applicationState?.value?.github?.username ?? "");
 let githubToken = ref<string>(applicationState?.value?.github?.token ?? "");
 
-
+async function save_github_config() {
+  let github_config: GithubConfigInput = {
+    username: githubUsername.value,
+    token: githubToken.value
+  };
+  let updatedApplicationState = await invoke<ApplicationStateOutput>(SAVE_GITHUB_CONFIG_CMD, {
+    "githubConfigInput": github_config
+  });
+  console.log(updatedApplicationState)
+  if (applicationState) {
+    applicationState.value = updatedApplicationState;
+  }
+}
 </script>
 
 <style scoped>
@@ -43,7 +57,7 @@ let githubToken = ref<string>(applicationState?.value?.github?.token ?? "");
       </div>
 
       <div class="flex flex-row gap-4 m-4 justify-end">
-        <Button class="uppercase">Save</Button>
+        <Button class="uppercase" @click="save_github_config">Save</Button>
       </div>
     </div>
   </ScrollPanel>

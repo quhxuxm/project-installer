@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 use std::ops::Deref;
 
 #[derive(Debug, Serialize, Deserialize, Hash, Eq, PartialEq, Ord, PartialOrd, Clone)]
-pub struct ProjectId(String);
+pub struct ProjectId(pub String);
 
 impl Display for ProjectId {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

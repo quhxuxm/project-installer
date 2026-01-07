@@ -1,12 +1,12 @@
-import {CommandState} from "./command_state.ts";
+import {CommandStateOutput} from "./command_state_output.ts";
 
-export type ProjectState = {
+export type ProjectStateOutput = {
     startupDependencies: string[];
     name: string | null;
     description: string | null;
-    buildCommand: CommandState | null;
-    runCommand: CommandState | null;
-    debugCommand: CommandState | null;
+    buildCommand: CommandStateOutput | null;
+    runCommand: CommandStateOutput | null;
+    debugCommand: CommandStateOutput | null;
     githubRepoUrl: string | null;
     githubBranches: string[];
     localRepoPath: string | null;

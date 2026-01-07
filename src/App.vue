@@ -3,17 +3,17 @@ import {onMounted, provide, ref} from "vue";
 import Menu from 'primevue/menu';
 import {MenuItem} from "primevue/menuitem";
 import {invoke} from "@tauri-apps/api/core";
-import {ApplicationState} from "./messages/application_state.ts";
-import {APPLICATION_STATE} from "./common.ts";
+import {ApplicationStateOutput} from "./messages/application_state_output.ts";
+import {APPLICATION_STATE, LOAD_APPLICATION_STATE_CMD} from "./common.ts";
 
 
-let applicationState = ref<ApplicationState>();
+let applicationState = ref<ApplicationStateOutput>();
 provide(APPLICATION_STATE, applicationState);
 
 let menuItems = ref<MenuItem[]>();
 
 onMounted(async () => {
-  applicationState.value = await invoke<ApplicationState>("load_application_state");
+  applicationState.value = await invoke<ApplicationStateOutput>(LOAD_APPLICATION_STATE_CMD);
   let projectMenuItems = new Array<MenuItem>();
   let projectsObj = applicationState.value?.projects ?? {};
   Object.keys(projectsObj).forEach((projectId) => {
@@ -68,7 +68,7 @@ onMounted(async () => {
 <template>
   <div class="h-screen w-screen flex flex-row space-x-4 p-4">
     <Menu :model="menuItems"
-          class="flex flex-col justify-start h-full w-full md:w-80 overflow-y-auto px-4">
+          class="flex flex-col justify-start h-full w-full md:w-70 overflow-y-auto px-3">
       <template #start>
                 <span class="inline-flex items-center gap-1 px-2 py-2">
                     <span class="text-xl font-black">
