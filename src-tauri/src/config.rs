@@ -1,5 +1,4 @@
-use crate::common::ProjectId;
-use anyhow::Result;
+use crate::{common::ProjectId, error::Error};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -182,7 +181,7 @@ impl GitHubConfig {
     }
 }
 
-pub fn load_tool_config() -> Result<ToolConfig> {
+pub fn load_tool_config() -> Result<ToolConfig, Error> {
     let config = config::Config::builder()
         .add_source(config::File::with_name("config"))
         .build()?;

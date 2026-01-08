@@ -8,7 +8,9 @@ use command::save_project_config;
 mod command;
 mod common;
 mod config;
+pub mod error;
 pub mod message;
+pub mod runtime;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
