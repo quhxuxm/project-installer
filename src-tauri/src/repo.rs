@@ -57,11 +57,11 @@ pub fn retrieve_code_from_github(retrieve_info: RetrieveGitHubCodeRequest) -> Re
 }
 
 pub struct RetrieveGitHubBranchesRequest<'a> {
-    github_username: String,
-    github_token: String,
-    github_repo_url: String,
-    local_repo_path: &'a Path,
-    proxy_url: Option<String>,
+    pub github_username: String,
+    pub github_token: String,
+    pub github_repo_url: String,
+    pub local_repo_path: &'a Path,
+    pub proxy_url: Option<String>,
 }
 
 pub fn retrieve_branches_from_github(
