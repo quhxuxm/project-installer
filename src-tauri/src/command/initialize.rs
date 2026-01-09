@@ -1,14 +1,14 @@
 use crate::config::ToolConfig;
 
 use crate::command::generate_application_state_message;
-use crate::message::output::{ApplicationStateOutput, ErrorOutput};
+use crate::message::output::{AppRuntimeStateOutput, ErrorOutput};
 use std::sync::RwLock;
 use tauri::State;
 
 #[tauri::command]
 pub fn load_application_state(
     tool_config: State<RwLock<ToolConfig>>,
-) -> Result<ApplicationStateOutput, ErrorOutput> {
+) -> Result<AppRuntimeStateOutput, ErrorOutput> {
     let tool_config = tool_config.read().map_err(|_| ErrorOutput {
         reason: "Failed to read tool configuration".to_string(),
     })?;

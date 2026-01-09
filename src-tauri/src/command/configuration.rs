@@ -2,7 +2,7 @@ use crate::command::generate_application_state_message;
 use crate::common::ProjectId;
 use crate::config::{CommandConfig, GitHubConfig, ProjectConfig, ToolConfig};
 use crate::message::input::{GithubConfigInput, ProjectConfigInput};
-use crate::message::output::{ApplicationStateOutput, ErrorOutput};
+use crate::message::output::{AppRuntimeStateOutput, ErrorOutput};
 use std::sync::RwLock;
 use tauri::State;
 
@@ -10,7 +10,7 @@ use tauri::State;
 pub fn save_github_config(
     github_config_input: GithubConfigInput,
     tool_config: State<RwLock<ToolConfig>>,
-) -> Result<ApplicationStateOutput, ErrorOutput> {
+) -> Result<AppRuntimeStateOutput, ErrorOutput> {
     let mut tool_config = tool_config.write().map_err(|_| ErrorOutput {
         reason: "Failed to read tool configuration".to_string(),
     })?;
@@ -27,7 +27,7 @@ pub fn save_github_config(
 pub fn save_project_config(
     project_config_input: ProjectConfigInput,
     tool_config: State<RwLock<ToolConfig>>,
-) -> Result<ApplicationStateOutput, ErrorOutput> {
+) -> Result<AppRuntimeStateOutput, ErrorOutput> {
     let mut tool_config = tool_config.write().map_err(|_| ErrorOutput {
         reason: "Failed to read tool configuration".to_string(),
     })?;
