@@ -5,6 +5,7 @@ use tracing::info;
 
 use crate::error::Error;
 
+#[derive(Debug)]
 pub struct RetrieveGitHubCodeRequest<'a> {
     github_username: String,
     github_token: String,
@@ -56,6 +57,7 @@ pub fn retrieve_code_from_github(retrieve_info: RetrieveGitHubCodeRequest) -> Re
     Ok(())
 }
 
+#[derive(Debug)]
 pub struct RetrieveGitHubBranchesRequest<'a> {
     pub github_username: String,
     pub github_token: String,
@@ -80,17 +82,28 @@ pub fn retrieve_branches_from_github(
         true
     });
 
-    let mut fetch_options = FetchOptions::new();
-    if let Some(proxy_url) = &retrieve_info.proxy_url {
+    let proxy_options = retrieve_info.proxy_url.as_ref().map(|url| {
         let mut proxy_options = ProxyOptions::new();
-        proxy_options.url(proxy_url);
-        fetch_options.proxy_options(proxy_options);
-    }
-
-    fetch_options.remote_callbacks(callbacks);
+        proxy_options.url(url);
+        info!("Using proxy to fetch branches: {url}");
+        proxy_options
+    });
     let temp_dir = temp_dir();
-    let temp_repo = Repository::init_bare(temp_dir.as_path())?;
-    let remote = temp_repo.remote("origin", &retrieve_info.github_repo_url)?;
+    info!("Creating temporary directory for fetching branches: {temp_dir:?}");
+    let temp_repo = Repository::init_bare(&temp_dir)?;
+    info!("Initialized temporary repository: {temp_dir:?}");
+    // let mut remote = temp_repo.find_remote("origin")?;
+    let mut remote = temp_repo.remote_anonymous(&retrieve_info.github_repo_url)?;
+    info!(
+        "Initialized remote repository: {}",
+        retrieve_info.github_repo_url
+    );
+
+    remote.connect_auth(git2::Direction::Fetch, Some(callbacks), proxy_options)?;
+    info!(
+        "Connected to remote repository: {}",
+        retrieve_info.github_repo_url
+    );
     let remote_refs = remote.list()?;
     let mut branches = Vec::new();
     for remote_ref in remote_refs {
@@ -100,5 +113,7 @@ pub fn retrieve_branches_from_github(
             branches.push(branch_name.to_string());
         }
     }
+    info!("Success to retrieve branches for repo: {retrieve_info:#?}");
+    info!("Branches: {branches:?}");
     Ok(branches)
 }

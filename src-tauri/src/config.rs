@@ -6,10 +6,11 @@ use std::path::PathBuf;
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ToolConfig {
     pub github: GitHubConfig,
+    pub proxy_url: Option<String>,
     pub projects: HashMap<ProjectId, ProjectConfig>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CommandConfig {
     pub command: String,
     pub args: Vec<String>,
@@ -25,6 +26,7 @@ pub struct ProjectConfig {
     pub build_command: Option<CommandConfig>,
     pub run_command: Option<CommandConfig>,
     pub debug_command: Option<CommandConfig>,
+    pub stop_command: Option<CommandConfig>,
     pub startup_dependencies: Vec<ProjectId>,
 }
 
