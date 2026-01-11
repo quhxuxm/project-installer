@@ -18,19 +18,14 @@ impl Deref for ProjectId {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Hash, PartialEq, Ord, Eq, PartialOrd, Copy, Clone)]
-pub struct ProcessId(u32);
-
-impl Deref for ProcessId {
-    type Target = u32;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
+impl From<String> for ProjectId {
+    fn from(value: String) -> Self {
+        ProjectId(value)
     }
 }
 
-impl Display for ProcessId {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+impl From<&str> for ProjectId {
+    fn from(value: &str) -> Self {
+        ProjectId(value.to_string())
     }
 }

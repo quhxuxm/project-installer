@@ -1,18 +1,13 @@
-use crate::{
-    common::ProjectId,
-    config::ToolConfig,
-    error::Error,
-    repo::{self, RetrieveGitHubBranchesRequest},
-};
+use crate::{common::ProjectId, config::TOOL_CONFIG, error::Error};
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, path::PathBuf};
-use tracing::{error, info};
+use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct GitHubRuntimeState {
+pub struct GitHubRuntimeDetail {
     pub username: String,
     pub token: String,
+    pub proxy: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -26,6 +21,7 @@ pub struct CommandRuntimeState {
 #[serde(rename_all = "camelCase")]
 pub enum CurrentProcess {
     GitHubPull,
+    BuildingApplication(CommandRuntimeState),
     RunningApplication(CommandRuntimeState),
     DebugingApplication(CommandRuntimeState),
     StopingApplication(CommandRuntimeState),
@@ -33,7 +29,7 @@ pub enum CurrentProcess {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ProjectRuntimeState {
+pub struct ProjectRuntimeDetail {
     pub name: String,
     pub description: String,
     pub github_branch: String,
@@ -49,80 +45,76 @@ pub struct ProjectRuntimeState {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AppRuntimeState {
-    pub github_state: GitHubRuntimeState,
-    pub project_states: HashMap<ProjectId, ProjectRuntimeState>,
+pub struct ProjectRuntimeSummary {
+    pub project_id: ProjectId,
+    pub name: String,
+    pub description: String,
 }
 
-pub fn load_app_runtime_state(tool_config: &ToolConfig) -> Result<AppRuntimeState, Error> {
-    let projects = &tool_config.projects;
-    let project_states = projects
+pub fn load_github_runtime_detail() -> Result<GitHubRuntimeDetail, Error> {
+    Ok(GitHubRuntimeDetail {
+        username: TOOL_CONFIG.github.username.clone(),
+        token: TOOL_CONFIG.github.token.clone(),
+        proxy: TOOL_CONFIG.github.proxy.clone(),
+    })
+}
+
+pub fn load_project_runtime_summaries() -> Result<Vec<ProjectRuntimeSummary>, Error> {
+    let mut summaries = TOOL_CONFIG
+        .projects
         .iter()
-        .map_while(|(project_id, project_config)| {
-            let github_branch = &project_config.github_branch;
-            let github_repo_url = &project_config.github_repo_url;
-            let local_repo_path = &project_config.local_repo_path;
-            let retrive_branches_info = RetrieveGitHubBranchesRequest {
-                github_username: tool_config.github.username.to_string(),
-                github_token: tool_config.github.token.to_string(),
-                github_repo_url: github_repo_url.to_string(),
-                local_repo_path,
-                proxy_url: tool_config.proxy_url.clone(),
-            };
-            let available_github_branches =
-                match repo::retrieve_branches_from_github(retrive_branches_info) {
-                    Ok(branches) => branches,
-                    Err(err) => {
-                        error!("Failed to retrieve branches for repo: {err}");
-                        vec![]
-                    }
-                };
-            Some((
-                project_id.clone(),
-                ProjectRuntimeState {
-                    name: project_config.name.clone(),
-                    description: project_config.description.clone(),
-                    available_github_branches,
-                    github_branch: github_branch.to_string(),
-                    github_repo_url: github_repo_url.to_string(),
-                    local_repo_path: local_repo_path.to_owned(),
-                    current_process: None,
-                    build_command: project_config.build_command.clone().map(|c| {
-                        CommandRuntimeState {
-                            cmd: c.command.clone(),
-                            args: c.args.clone(),
-                        }
-                    }),
-                    run_command: project_config
-                        .run_command
-                        .clone()
-                        .map(|c| CommandRuntimeState {
-                            cmd: c.command.clone(),
-                            args: c.args.clone(),
-                        }),
-                    stop_command: project_config.stop_command.clone().map(|c| {
-                        CommandRuntimeState {
-                            cmd: c.command.clone(),
-                            args: c.args.clone(),
-                        }
-                    }),
-                    debug_command: project_config.debug_command.clone().map(|c| {
-                        CommandRuntimeState {
-                            cmd: c.command.clone(),
-                            args: c.args.clone(),
-                        }
-                    }),
-                },
-            ))
+        .map(|(project_id, project_config)| ProjectRuntimeSummary {
+            project_id: project_id.clone(),
+            name: project_config.name.clone(),
+            description: project_config.description.clone(),
         })
-        .collect::<HashMap<ProjectId, ProjectRuntimeState>>();
-    let app_runtime_state = AppRuntimeState {
-        github_state: GitHubRuntimeState {
-            username: tool_config.github.username.clone(),
-            token: tool_config.github.token.clone(),
-        },
-        project_states,
+        .collect::<Vec<_>>();
+    summaries.sort_by(|a, b| a.name.cmp(&b.name));
+    Ok(summaries)
+}
+
+pub fn load_project_runtime_detail(project_id: &ProjectId) -> Result<ProjectRuntimeDetail, Error> {
+    let project_config = TOOL_CONFIG
+        .projects
+        .get(project_id)
+        .ok_or(Error::ProjectNotFound(project_id.clone()))?;
+
+    let project_runtime_detail = ProjectRuntimeDetail {
+        name: project_config.name.clone(),
+        description: project_config.description.clone(),
+        available_github_branches: vec![],
+        github_branch: project_config.github_branch.clone(),
+        github_repo_url: project_config.github_repo_url.clone(),
+        local_repo_path: project_config.local_repo_path.clone(),
+        current_process: None,
+        build_command: project_config
+            .build_command
+            .clone()
+            .map(|c| CommandRuntimeState {
+                cmd: c.command.clone(),
+                args: c.args.clone(),
+            }),
+        run_command: project_config
+            .run_command
+            .clone()
+            .map(|c| CommandRuntimeState {
+                cmd: c.command.clone(),
+                args: c.args.clone(),
+            }),
+        stop_command: project_config
+            .stop_command
+            .clone()
+            .map(|c| CommandRuntimeState {
+                cmd: c.command.clone(),
+                args: c.args.clone(),
+            }),
+        debug_command: project_config
+            .debug_command
+            .clone()
+            .map(|c| CommandRuntimeState {
+                cmd: c.command.clone(),
+                args: c.args.clone(),
+            }),
     };
-    //info!("Load application runtime status:{app_runtime_state:#?}");
-    Ok(app_runtime_state)
+    Ok(project_runtime_detail)
 }

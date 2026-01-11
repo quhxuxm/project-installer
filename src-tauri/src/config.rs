@@ -1,12 +1,14 @@
 use crate::{common::ProjectId, error::Error};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::path::PathBuf;
+use std::{collections::HashMap, sync::LazyLock};
+
+pub static TOOL_CONFIG: LazyLock<ToolConfig> =
+    LazyLock::new(|| load_tool_config().expect("Failed to load tool configuration"));
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ToolConfig {
     pub github: GitHubConfig,
-    pub proxy_url: Option<String>,
     pub projects: HashMap<ProjectId, ProjectConfig>,
 }
 
@@ -34,9 +36,10 @@ pub struct ProjectConfig {
 pub struct GitHubConfig {
     pub username: String,
     pub token: String,
+    pub proxy: Option<String>,
 }
 
-pub fn load_tool_config() -> Result<ToolConfig, Error> {
+fn load_tool_config() -> Result<ToolConfig, Error> {
     let config = config::Config::builder()
         .add_source(config::File::with_name("config"))
         .build()?;

@@ -1,65 +1,59 @@
 <script lang="ts" setup>
-
-import {inject, ref} from "vue";
+import {  onMounted, ref } from "vue";
 import ScrollPanel from "primevue/scrollpanel";
-import {Button, InputText} from "primevue";
-import Textarea from 'primevue/textarea';
-import {APPLICATION_STATE, SAVE_GITHUB_CONFIG_CMD} from "../common.ts";
-import {GithubConfigInput} from "../messages/github_config_input.ts";
-import {invoke} from "@tauri-apps/api/core";
-import {ApplicationStateOutput} from "../messages/application_state_output.ts";
+import { Button, InputText } from "primevue";
+import Textarea from "primevue/textarea";
+import {  GET_GITHUB_RUNTIME_DETAIL_CMD,  } from "../common.ts";
+import { invoke } from "@tauri-apps/api/core";
+import { GitHubRuntimeDetail } from "../messages/github.ts";
 
-let applicationState = inject(APPLICATION_STATE);
+let githubUsername = ref("");
+let githubToken = ref("");
 
-let githubUsername = ref<string>(applicationState?.value?.github?.username ?? "");
-let githubToken = ref<string>(applicationState?.value?.github?.token ?? "");
-
-async function save_github_config() {
-  let github_config: GithubConfigInput = {
-    username: githubUsername.value,
-    token: githubToken.value
-  };
-  let updatedApplicationState = await invoke<ApplicationStateOutput>(SAVE_GITHUB_CONFIG_CMD, {
-    "githubConfigInput": github_config
-  });
-  console.log(updatedApplicationState)
-  if (applicationState) {
-    applicationState.value = updatedApplicationState;
-  }
-}
+onMounted(async () => {
+    let githubRuntimeDetail = await invoke<GitHubRuntimeDetail>(
+        GET_GITHUB_RUNTIME_DETAIL_CMD,
+    );
+    githubUsername.value = githubRuntimeDetail.username;
+    githubToken.value = githubRuntimeDetail.token;
+});
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
 
 <template>
+    <ScrollPanel class="h-full px-4">
+        <div class="flex flex-col gap-4 h-full">
+            <h1 class="text-2xl text-primary mb-4">GitHub configuration</h1>
 
-  <ScrollPanel class="h-full px-4">
-    <div class="flex flex-col gap-4 h-full">
-      <h1 class="text-2xl text-primary mb-4">GitHub configuration</h1>
+            <div class="flex flex-col gap-2">
+                <label class="text-lg" for="username">Username</label>
+                <InputText id="username" v-model="githubUsername" />
+                <Message
+                    class="text-gray-500 text-sm"
+                    severity="secondary"
+                    size="small"
+                    variant="simple"
+                    >Enter the GitHub username.
+                </Message>
+            </div>
+            <div class="flex flex-col grow gap-2">
+                <label class="text-lg" for="token">Token</label>
+                <Textarea id="token" v-model="githubToken" class="grow" />
+                <Message
+                    class="text-gray-500 text-sm"
+                    severity="secondary"
+                    size="small"
+                    variant="simple"
+                    >Enter the GitHub token.
+                </Message>
+            </div>
 
-      <div class="flex flex-col gap-2">
-        <label class="text-lg" for="username">Username</label>
-        <InputText id="username" v-model="githubUsername"/>
-        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter the
-          GitHub
-          username.
-        </Message>
-      </div>
-      <div class="flex flex-col grow gap-2">
-        <label class="text-lg" for="token">Token</label>
-        <Textarea id="token" v-model="githubToken" class="grow"/>
-        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter the
-          GitHub
-          token.
-        </Message>
-      </div>
-
-      <div class="flex flex-row gap-4 m-4 justify-end">
-        <Button class="uppercase" @click="save_github_config">Save</Button>
-      </div>
-    </div>
-  </ScrollPanel>
+            <div class="flex flex-row gap-4 m-4 justify-end">
+                <Button class="uppercase"
+                    >Save</Button
+                >
+            </div>
+        </div>
+    </ScrollPanel>
 </template>
-

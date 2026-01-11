@@ -1,11 +1,20 @@
-use crate::config::ToolConfig;
+use crate::runtime::{
+    load_github_runtime_detail, load_project_runtime_detail, load_project_runtime_summaries,
+    GitHubRuntimeDetail, ProjectRuntimeDetail, ProjectRuntimeSummary,
+};
 
 use crate::error::Error;
-use crate::runtime::{load_app_runtime_state, AppRuntimeState};
-use std::sync::Arc;
-use tauri::State;
 
 #[tauri::command]
-pub fn load_application_state(state: State<Arc<ToolConfig>>) -> Result<AppRuntimeState, Error> {
-    load_app_runtime_state(&state)
+pub fn get_project_runtime_summaries() -> Result<Vec<ProjectRuntimeSummary>, Error> {
+    load_project_runtime_summaries()
+}
+#[tauri::command]
+pub fn get_project_runtime_detail(project_id: &str) -> Result<ProjectRuntimeDetail, Error> {
+    load_project_runtime_detail(&project_id.into())
+}
+
+#[tauri::command]
+pub fn get_github_runtime_detail() -> Result<GitHubRuntimeDetail, Error> {
+    load_github_runtime_detail()
 }
