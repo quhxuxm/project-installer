@@ -25,8 +25,7 @@ pub async fn get_github_runtime_detail() -> Result<GitHubRuntimeDetail, Error> {
 }
 
 #[tauri::command]
-pub async fn get_project_code(project_runtime_update: ProjectRuntimeUpdate) -> Result<(), Error> {
-    info!("Receive project runtime update: {project_runtime_update:#?}");
+pub async fn save_project(project_runtime_update: ProjectRuntimeUpdate) -> Result<(), Error> {
     let mut tool_config = TOOL_CONFIG.write().map_err(|_| Error::LockFail)?;
     let project = tool_config
         .projects
@@ -38,6 +37,13 @@ pub async fn get_project_code(project_runtime_update: ProjectRuntimeUpdate) -> R
     project.github_branch = project_runtime_update.github_branch;
     project.github_repo_url = project_runtime_update.github_repo_url;
     save_tool_config(&tool_config)?;
-    drop(tool_config);
-    repo::get_project_github_code(&project_runtime_update.project_id.into())
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn get_project_code(project_runtime_update: ProjectRuntimeUpdate) -> Result<(), Error> {
+    info!("Receive project runtime update: {project_runtime_update:#?}");
+    let project_id = project_runtime_update.project_id.clone();
+    save_project(project_runtime_update).await?;
+    repo::get_project_github_code(&project_id.into())
 }

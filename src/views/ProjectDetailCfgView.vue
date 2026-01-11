@@ -4,7 +4,7 @@ import {ref, watch} from "vue";
 import ScrollPanel from "primevue/scrollpanel";
 import {Button, InputText, Select} from "primevue";
 import Fieldset from "primevue/fieldset";
-import {GET_PROJECT_CODE_CMD, GET_PROJECT_RUNTIME_DETAIL_CMD,} from "../common.ts";
+import {GET_PROJECT_CODE_CMD, GET_PROJECT_RUNTIME_DETAIL_CMD, SAVE_PROJECT_CMD,} from "../common.ts";
 import {invoke} from "@tauri-apps/api/core";
 import {ProjectRuntimeDetail, ProjectRuntimeUpdate} from "../messages/project.ts";
 
@@ -55,9 +55,8 @@ watch(
     },
 );
 
-
-function getProjectCode() {
-  let projectRuntimeUpdate: ProjectRuntimeUpdate = {
+function generateProjectUpdate(): ProjectRuntimeUpdate {
+  return {
     buildCommand: buildCommandVal.value,
     debugCommand: debugCommandVal.value,
     githubRepoUrl: projectRuntimeDetail.value.githubRepoUrl,
@@ -66,7 +65,20 @@ function getProjectCode() {
     projectId: currentRoute.params.id as string,
     githubBranch: projectRuntimeDetail.value.githubBranch
   };
+}
+
+function getProjectCode() {
+  let projectRuntimeUpdate = generateProjectUpdate();
   invoke(GET_PROJECT_CODE_CMD, {
+    projectRuntimeUpdate
+  }).catch((e) => {
+    console.log("Error happen when get project code: " + e);
+  })
+}
+
+function saveProject() {
+  let projectRuntimeUpdate = generateProjectUpdate();
+  invoke(SAVE_PROJECT_CMD, {
     projectRuntimeUpdate
   }).catch((e) => {
     console.log("Error happen when get project code: " + e);
@@ -180,7 +192,7 @@ function getProjectCode() {
         </div>
       </Fieldset>
       <div class="flex flex-row gap-4 m-4 justify-end">
-        <Button class="uppercase">Save</Button>
+        <Button class="uppercase" @click="saveProject">Save</Button>
         <Button class="uppercase" @click="getProjectCode">Get code</Button>
         <Button class="uppercase">Build</Button>
         <Button class="uppercase">Run</Button>
