@@ -17,7 +17,7 @@ pub struct GetBranchesRequest {
     pub github_repo_url: String,
 }
 
-pub fn get_code(project_id: &ProjectId) -> Result<(), Error> {
+pub fn get_project_github_code(project_id: &ProjectId) -> Result<(), Error> {
     let github_config = &TOOL_CONFIG.github;
     let projects_config = &TOOL_CONFIG.projects;
     let project_config = projects_config

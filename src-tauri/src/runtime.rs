@@ -1,4 +1,4 @@
-use crate::{common::ProjectId, config::TOOL_CONFIG, error::Error};
+use crate::{common::ProjectId, config::TOOL_CONFIG, error::Error, repo};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -78,11 +78,11 @@ pub fn load_project_runtime_detail(project_id: &ProjectId) -> Result<ProjectRunt
         .projects
         .get(project_id)
         .ok_or(Error::ProjectNotFound(project_id.clone()))?;
-
+    let available_github_branches = repo::get_project_github_branches(project_id)?;
     let project_runtime_detail = ProjectRuntimeDetail {
         name: project_config.name.clone(),
         description: project_config.description.clone(),
-        available_github_branches: vec![],
+        available_github_branches,
         github_branch: project_config.github_branch.clone(),
         github_repo_url: project_config.github_repo_url.clone(),
         local_repo_path: project_config.local_repo_path.clone(),

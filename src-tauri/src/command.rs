@@ -6,15 +6,15 @@ use crate::runtime::{
 use crate::error::Error;
 
 #[tauri::command]
-pub fn get_project_runtime_summaries() -> Result<Vec<ProjectRuntimeSummary>, Error> {
+pub async fn get_project_runtime_summaries() -> Result<Vec<ProjectRuntimeSummary>, Error> {
     load_project_runtime_summaries()
 }
 #[tauri::command]
-pub fn get_project_runtime_detail(project_id: &str) -> Result<ProjectRuntimeDetail, Error> {
+pub async fn get_project_runtime_detail(project_id: &str) -> Result<ProjectRuntimeDetail, Error> {
     load_project_runtime_detail(&project_id.into())
 }
 
 #[tauri::command]
-pub fn get_github_runtime_detail() -> Result<GitHubRuntimeDetail, Error> {
+pub async fn get_github_runtime_detail() -> Result<GitHubRuntimeDetail, Error> {
     load_github_runtime_detail()
 }
