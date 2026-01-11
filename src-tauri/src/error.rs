@@ -12,6 +12,12 @@ pub enum Error {
     GitHub(#[from] git2::Error),
     #[error("Project not found: {0}")]
     ProjectNotFound(ProjectId),
+    #[error("Lock fail")]
+    LockFail,
+    #[error("Serialize toml fail: {0}")]
+    SerializeTomlFail(#[from] toml::ser::Error),
+    #[error("IO error: {0}")]
+    IoError(#[from] std::io::Error),
 }
 
 impl From<Error> for InvokeError {

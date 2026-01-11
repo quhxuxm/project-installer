@@ -1,10 +1,12 @@
 use crate::{common::ProjectId, error::Error};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use std::{collections::HashMap, sync::LazyLock};
+use std::sync::RwLock;
+use std::{collections::HashMap, fs, sync::LazyLock};
 
-pub static TOOL_CONFIG: LazyLock<ToolConfig> =
-    LazyLock::new(|| load_tool_config().expect("Failed to load tool configuration"));
+const CONFIG_FILE_NAME: &str = "config.toml";
+pub static TOOL_CONFIG: LazyLock<RwLock<ToolConfig>> =
+    LazyLock::new(|| RwLock::new(load_tool_config().expect("Failed to load tool configuration")));
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ToolConfig {
@@ -45,4 +47,10 @@ fn load_tool_config() -> Result<ToolConfig, Error> {
         .build()?;
     let tool_config = config.try_deserialize::<ToolConfig>()?;
     Ok(tool_config)
+}
+
+pub fn save_tool_config(tool_config: &ToolConfig) -> Result<(), Error> {
+    let content = toml::to_string_pretty(tool_config)?;
+    fs::write(CONFIG_FILE_NAME, content)?;
+    Ok(())
 }

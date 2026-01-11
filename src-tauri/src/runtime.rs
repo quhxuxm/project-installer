@@ -52,15 +52,17 @@ pub struct ProjectRuntimeSummary {
 }
 
 pub fn load_github_runtime_detail() -> Result<GitHubRuntimeDetail, Error> {
+    let tool_config = TOOL_CONFIG.read().map_err(|_| Error::LockFail)?;
     Ok(GitHubRuntimeDetail {
-        username: TOOL_CONFIG.github.username.clone(),
-        token: TOOL_CONFIG.github.token.clone(),
-        proxy: TOOL_CONFIG.github.proxy.clone(),
+        username: tool_config.github.username.clone(),
+        token: tool_config.github.token.clone(),
+        proxy: tool_config.github.proxy.clone(),
     })
 }
 
 pub fn load_project_runtime_summaries() -> Result<Vec<ProjectRuntimeSummary>, Error> {
-    let mut summaries = TOOL_CONFIG
+    let tool_config = TOOL_CONFIG.read().map_err(|_| Error::LockFail)?;
+    let mut summaries = tool_config
         .projects
         .iter()
         .map(|(project_id, project_config)| ProjectRuntimeSummary {
@@ -74,7 +76,8 @@ pub fn load_project_runtime_summaries() -> Result<Vec<ProjectRuntimeSummary>, Er
 }
 
 pub fn load_project_runtime_detail(project_id: &ProjectId) -> Result<ProjectRuntimeDetail, Error> {
-    let project_config = TOOL_CONFIG
+    let tool_config = TOOL_CONFIG.read().map_err(|_| Error::LockFail)?;
+    let project_config = tool_config
         .projects
         .get(project_id)
         .ok_or(Error::ProjectNotFound(project_id.clone()))?;

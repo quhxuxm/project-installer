@@ -1,25 +1,19 @@
-use std::{env::temp_dir, path::Path};
-
-use git2::{build::RepoBuilder, Cred, FetchOptions, ProxyOptions, RemoteCallbacks, Repository};
-use tracing::info;
+use std::env::temp_dir;
 
 use crate::{common::ProjectId, config::TOOL_CONFIG, error::Error};
-
-#[derive(Debug)]
-pub struct GetCodeRequest<'a> {
-    pub github_branch: String,
-    pub github_repo_url: String,
-    pub local_repo_path: &'a Path,
-}
+use git2::{build::RepoBuilder, Cred, FetchOptions, ProxyOptions, RemoteCallbacks, Repository};
+use tracing::{debug, info};
 
 #[derive(Debug)]
 pub struct GetBranchesRequest {
+    pub project_id: ProjectId,
     pub github_repo_url: String,
 }
 
 pub fn get_project_github_code(project_id: &ProjectId) -> Result<(), Error> {
-    let github_config = &TOOL_CONFIG.github;
-    let projects_config = &TOOL_CONFIG.projects;
+    let tool_config = TOOL_CONFIG.read().map_err(|_| Error::LockFail)?;
+    let github_config = &tool_config.github;
+    let projects_config = &tool_config.projects;
     let project_config = projects_config
         .get(project_id)
         .ok_or(Error::ProjectNotFound(project_id.clone()))?;
@@ -31,7 +25,7 @@ pub fn get_project_github_code(project_id: &ProjectId) -> Result<(), Error> {
     callbacks.transfer_progress(|progress| {
         let received_objects = progress.received_objects();
         let total_objects = progress.total_objects();
-        info!("Receiving data from GitHub: {received_objects}/{total_objects}");
+        debug!("Receiving data from GitHub: {received_objects}/{total_objects}");
         true
     });
     let mut fetch_options = FetchOptions::new();
@@ -41,8 +35,15 @@ pub fn get_project_github_code(project_id: &ProjectId) -> Result<(), Error> {
         fetch_options.proxy_options(proxy_options);
     }
     fetch_options.remote_callbacks(callbacks);
-    if project_config.local_repo_path.exists() {
-        let repository = Repository::open(&project_config.local_repo_path)?;
+    let project_local_path = project_config
+        .local_repo_path
+        .join(&project_config.github_branch);
+    info!(
+        "Cloning from GitHub: {} to {project_local_path:?}",
+        project_config.github_repo_url
+    );
+    if project_local_path.exists() {
+        let repository = Repository::open(&project_local_path)?;
         repository.find_remote("origin")?.fetch(
             &[&project_config.github_branch],
             Some(&mut fetch_options),
@@ -52,17 +53,20 @@ pub fn get_project_github_code(project_id: &ProjectId) -> Result<(), Error> {
         let mut builder = RepoBuilder::new();
         builder.fetch_options(fetch_options);
         builder.branch(&project_config.github_branch);
-        builder.clone(
-            &project_config.github_repo_url,
-            &project_config.local_repo_path,
-        )?;
+        builder.clone(&project_config.github_repo_url, &project_local_path)?;
     }
+
+    info!(
+        "Complete to clone from GitHub: {} to {project_local_path:?}",
+        project_config.github_repo_url
+    );
     Ok(())
 }
 
 pub fn get_project_github_branches(project_id: &ProjectId) -> Result<Vec<String>, Error> {
-    let github_config = &TOOL_CONFIG.github;
-    let projects_config = &TOOL_CONFIG.projects;
+    let tool_config = TOOL_CONFIG.read().map_err(|_| Error::LockFail)?;
+    let github_config = &tool_config.github;
+    let projects_config = &tool_config.projects;
     let project_config = projects_config
         .get(project_id)
         .ok_or(Error::ProjectNotFound(project_id.clone()))?;

@@ -17,6 +17,7 @@ onMounted(async () => {
   githubUsername.value = githubRuntimeDetail.username;
   githubToken.value = githubRuntimeDetail.token;
 });
+
 </script>
 
 <style scoped></style>

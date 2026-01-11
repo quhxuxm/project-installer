@@ -4,9 +4,9 @@ import {ref, watch} from "vue";
 import ScrollPanel from "primevue/scrollpanel";
 import {Button, InputText, Select} from "primevue";
 import Fieldset from "primevue/fieldset";
-import {GET_PROJECT_RUNTIME_DETAIL_CMD,} from "../common.ts";
+import {GET_PROJECT_CODE_CMD, GET_PROJECT_RUNTIME_DETAIL_CMD,} from "../common.ts";
 import {invoke} from "@tauri-apps/api/core";
-import {ProjectRuntimeDetail} from "../messages/project.ts";
+import {ProjectRuntimeDetail, ProjectRuntimeUpdate} from "../messages/project.ts";
 
 let currentRoute = useRoute();
 
@@ -55,6 +55,24 @@ watch(
     },
 );
 
+
+function getProjectCode() {
+  let projectRuntimeUpdate: ProjectRuntimeUpdate = {
+    buildCommand: buildCommandVal.value,
+    debugCommand: debugCommandVal.value,
+    githubRepoUrl: projectRuntimeDetail.value.githubRepoUrl,
+    localRepoPath: projectRuntimeDetail.value.localRepoPath,
+    runCommand: runCommandVal.value,
+    projectId: currentRoute.params.id as string,
+    githubBranch: projectRuntimeDetail.value.githubBranch
+  };
+  invoke(GET_PROJECT_CODE_CMD, {
+    projectRuntimeUpdate
+  }).catch((e) => {
+    console.log("Error happen when get project code: " + e);
+  })
+}
+
 </script>
 
 <style scoped></style>
@@ -67,9 +85,9 @@ watch(
     <h1 class="text-2xl text-primary mb-4">
       {{ projectRuntimeDetail.name }}
     </h1>
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-4 ">
       <Fieldset
-          class="text-xl"
+          class="text-xl  pb-3 pt-3"
           legend="Repository configuration"
           toggleable
       >
@@ -94,8 +112,8 @@ watch(
             >Repository url</label
             >
             <InputText
-                id="githubRepositoryUrl"
-                v-model="projectRuntimeDetail.githubRepoUrl"
+                id="githubRepositoryUrl" v-model="projectRuntimeDetail.githubRepoUrl"
+                readonly
             />
             <Message
                 class="text-gray-500 text-sm"
@@ -111,16 +129,20 @@ watch(
             >
             <InputText id="localRepoPath" v-model="projectRuntimeDetail.localRepoPath"/>
             <Message
-                class="text-gray-500 text-sm"
+                class="text-gray-500 text-sm flex flex-col"
                 severity="secondary"
                 size="small"
                 variant="simple"
-            >Enter the local repository path.
+            >
+              <span>Enter the local repository path, the concrete local path will be:</span>
+              <span class="text-primary">
+                {{ projectRuntimeDetail.localRepoPath }}/{{ projectRuntimeDetail.githubBranch }}
+              </span>
             </Message>
           </div>
         </div>
       </Fieldset>
-      <Fieldset class="text-xl" legend="Command configuration" toggleable>
+      <Fieldset class="text-xl  pb-3 pt-3" legend="Command configuration" toggleable>
         <div class="flex flex-col gap-4">
           <div class="flex flex-col gap-2 mb-4">
             <label class="text-lg" for="buildCommand">Build command</label>
@@ -159,7 +181,7 @@ watch(
       </Fieldset>
       <div class="flex flex-row gap-4 m-4 justify-end">
         <Button class="uppercase">Save</Button>
-        <Button class="uppercase">Pull code</Button>
+        <Button class="uppercase" @click="getProjectCode">Get code</Button>
         <Button class="uppercase">Build</Button>
         <Button class="uppercase">Run</Button>
         <Button class="uppercase">Debug</Button>
