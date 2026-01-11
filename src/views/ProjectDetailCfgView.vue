@@ -26,6 +26,10 @@ let projectRuntimeDetail = ref<ProjectRuntimeDetail>({
   debugCommand: undefined
 });
 
+let buildCommandVal = ref("");
+let runCommandVal = ref("");
+let debugCommandVal = ref("")
+
 function switchProjectDetail(projectId: string) {
   loading.value = true;
   invoke<ProjectRuntimeDetail>(
@@ -33,6 +37,10 @@ function switchProjectDetail(projectId: string) {
       {projectId}
   ).then((backendData) => {
     projectRuntimeDetail.value = backendData;
+    buildCommandVal.value = `${backendData.buildCommand?.command} ${backendData.buildCommand?.args.join(' ')}`.trim();
+    runCommandVal.value = `${backendData.runCommand?.command} ${backendData.runCommand?.args.join(' ')}`.trim();
+    debugCommandVal.value = `${backendData.debugCommand?.command} ${backendData.debugCommand?.args.join(' ')}`.trim()
+
     loading.value = false;
   });
 }
@@ -116,7 +124,7 @@ watch(
         <div class="flex flex-col gap-4">
           <div class="flex flex-col gap-2 mb-4">
             <label class="text-lg" for="buildCommand">Build command</label>
-            <InputText id="buildCommand" v-model="projectRuntimeDetail.buildCommand"/>
+            <InputText id="buildCommand" v-model="buildCommandVal"/>
             <Message
                 class="text-gray-500 text-sm"
                 severity="secondary"
@@ -127,7 +135,7 @@ watch(
           </div>
           <div class="flex flex-col gap-2 mb-4">
             <label class="text-lg" for="runCommand">Run command</label>
-            <InputText id="runCommand" v-model="projectRuntimeDetail.runCommand"/>
+            <InputText id="runCommand" v-model="runCommandVal"/>
             <Message
                 class="text-gray-500 text-sm"
                 severity="secondary"
@@ -138,7 +146,7 @@ watch(
           </div>
           <div class="flex flex-col gap-2">
             <label class="text-lg" for="debugCommand">Debug command</label>
-            <InputText id="debugCommand" v-model="projectRuntimeDetail.debugCommand"/>
+            <InputText id="debugCommand" v-model="debugCommandVal"/>
             <Message
                 class="text-gray-500 text-sm"
                 severity="secondary"

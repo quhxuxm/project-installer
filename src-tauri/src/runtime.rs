@@ -13,7 +13,7 @@ pub struct GitHubRuntimeDetail {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CommandRuntimeState {
-    pub cmd: String,
+    pub command: String,
     pub args: Vec<String>,
 }
 
@@ -91,28 +91,28 @@ pub fn load_project_runtime_detail(project_id: &ProjectId) -> Result<ProjectRunt
             .build_command
             .clone()
             .map(|c| CommandRuntimeState {
-                cmd: c.command.clone(),
+                command: c.command.clone(),
                 args: c.args.clone(),
             }),
         run_command: project_config
             .run_command
             .clone()
             .map(|c| CommandRuntimeState {
-                cmd: c.command.clone(),
+                command: c.command.clone(),
                 args: c.args.clone(),
             }),
         stop_command: project_config
             .stop_command
             .clone()
             .map(|c| CommandRuntimeState {
-                cmd: c.command.clone(),
+                command: c.command.clone(),
                 args: c.args.clone(),
             }),
         debug_command: project_config
             .debug_command
             .clone()
             .map(|c| CommandRuntimeState {
-                cmd: c.command.clone(),
+                command: c.command.clone(),
                 args: c.args.clone(),
             }),
     };
