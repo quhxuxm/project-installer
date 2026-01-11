@@ -37,9 +37,6 @@ function switchProjectDetail(projectId: string) {
   });
 }
 
-// onMounted(async () => {
-//   await switchProjectDetail(currentRoute.params.id as string);
-// });
 
 switchProjectDetail(currentRoute.params.id as string);
 
