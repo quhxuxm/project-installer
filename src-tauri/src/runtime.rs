@@ -12,19 +12,12 @@ pub struct GitHubRuntimeDetail {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CommandRuntimeState {
-    pub command: String,
-    pub args: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum CurrentProcess {
     GitHubPull,
-    BuildingApplication(CommandRuntimeState),
-    RunningApplication(CommandRuntimeState),
-    DebugingApplication(CommandRuntimeState),
-    StopingApplication(CommandRuntimeState),
+    BuildingApplication(String),
+    RunningApplication(String),
+    DebugingApplication(String),
+    StopingApplication(String),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -37,10 +30,10 @@ pub struct ProjectRuntimeDetail {
     pub local_repo_path: PathBuf,
     pub current_process: Option<CurrentProcess>,
     pub available_github_branches: Vec<String>,
-    pub build_command: Option<CommandRuntimeState>,
-    pub run_command: Option<CommandRuntimeState>,
-    pub stop_command: Option<CommandRuntimeState>,
-    pub debug_command: Option<CommandRuntimeState>,
+    pub build_command: Option<String>,
+    pub run_command: Option<String>,
+    pub stop_command: Option<String>,
+    pub debug_command: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -90,34 +83,10 @@ pub fn load_project_runtime_detail(project_id: &ProjectId) -> Result<ProjectRunt
         github_repo_url: project_config.github_repo_url.clone(),
         local_repo_path: project_config.local_repo_path.clone(),
         current_process: None,
-        build_command: project_config
-            .build_command
-            .clone()
-            .map(|c| CommandRuntimeState {
-                command: c.command.clone(),
-                args: c.args.clone(),
-            }),
-        run_command: project_config
-            .run_command
-            .clone()
-            .map(|c| CommandRuntimeState {
-                command: c.command.clone(),
-                args: c.args.clone(),
-            }),
-        stop_command: project_config
-            .stop_command
-            .clone()
-            .map(|c| CommandRuntimeState {
-                command: c.command.clone(),
-                args: c.args.clone(),
-            }),
-        debug_command: project_config
-            .debug_command
-            .clone()
-            .map(|c| CommandRuntimeState {
-                command: c.command.clone(),
-                args: c.args.clone(),
-            }),
+        build_command: project_config.build_command.clone(),
+        run_command: project_config.run_command.clone(),
+        stop_command: project_config.stop_command.clone(),
+        debug_command: project_config.debug_command.clone(),
     };
     Ok(project_runtime_detail)
 }

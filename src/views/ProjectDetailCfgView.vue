@@ -26,9 +26,9 @@ let projectRuntimeDetail = ref<ProjectRuntimeDetail>({
   debugCommand: undefined
 });
 
-let buildCommandVal = ref("");
-let runCommandVal = ref("");
-let debugCommandVal = ref("")
+let buildCommandVal = ref();
+let runCommandVal = ref();
+let debugCommandVal = ref()
 
 function switchProjectDetail(projectId: string) {
   loading.value = true;
@@ -37,10 +37,9 @@ function switchProjectDetail(projectId: string) {
       {projectId}
   ).then((backendData) => {
     projectRuntimeDetail.value = backendData;
-    buildCommandVal.value = `${backendData.buildCommand?.command} ${backendData.buildCommand?.args.join(' ')}`.trim();
-    runCommandVal.value = `${backendData.runCommand?.command} ${backendData.runCommand?.args.join(' ')}`.trim();
-    debugCommandVal.value = `${backendData.debugCommand?.command} ${backendData.debugCommand?.args.join(' ')}`.trim()
-
+    buildCommandVal.value = backendData.buildCommand;
+    runCommandVal.value = backendData.runCommand;
+    debugCommandVal.value = backendData.debugCommand;
     loading.value = false;
   });
 }

@@ -1,8 +1,3 @@
-export type CommandRuntimeState = {
-    command: string;
-    args: string[];
-}
-
 export type ProjectRuntimeSummary = {
     projectId: string;
     name: string;
@@ -17,10 +12,10 @@ export type ProjectRuntimeDetail = {
     localRepoPath: string;
     currentProcess: string | null | undefined;
     availableGithubBranches: string[];
-    buildCommand: CommandRuntimeState | null | undefined;
-    runCommand: CommandRuntimeState | null | undefined;
-    stopCommand: CommandRuntimeState | null | undefined;
-    debugCommand: CommandRuntimeState | null | undefined;
+    buildCommand: string | null | undefined;
+    runCommand: string | null | undefined;
+    stopCommand: string | null | undefined;
+    debugCommand: string | null | undefined;
 };
 
 export type ProjectRuntimeUpdate = {

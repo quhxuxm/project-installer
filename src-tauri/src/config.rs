@@ -14,12 +14,6 @@ pub struct ToolConfig {
     pub projects: HashMap<ProjectId, ProjectConfig>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct CommandConfig {
-    pub command: String,
-    pub args: Vec<String>,
-}
-
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct ProjectConfig {
     pub name: String,
@@ -27,10 +21,10 @@ pub struct ProjectConfig {
     pub github_repo_url: String,
     pub github_branch: String,
     pub local_repo_path: PathBuf,
-    pub build_command: Option<CommandConfig>,
-    pub run_command: Option<CommandConfig>,
-    pub debug_command: Option<CommandConfig>,
-    pub stop_command: Option<CommandConfig>,
+    pub build_command: Option<String>,
+    pub run_command: Option<String>,
+    pub debug_command: Option<String>,
+    pub stop_command: Option<String>,
     pub startup_dependencies: Vec<ProjectId>,
 }
 

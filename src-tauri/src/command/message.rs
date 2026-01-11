@@ -8,7 +8,7 @@ pub struct ProjectRuntimeUpdate {
     pub github_branch: String,
     pub github_repo_url: String,
     pub local_repo_path: String,
-    pub build_command: String,
-    pub debug_command: String,
-    pub run_command: String,
+    pub build_command: Option<String>,
+    pub debug_command: Option<String>,
+    pub run_command: Option<String>,
 }

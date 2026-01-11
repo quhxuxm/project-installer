@@ -1,59 +1,65 @@
 [github]
 username = "quhxuxm"
-token = "github-token"
+token = ""
+proxy = "http://127.0.0.1:10080"
 
 [projects.rgs]
 name = "RGS Platform"
 description = "The core rgs platform, which is a tomcat application."
-github_repo_url = "https://www.github.com/quhxuxm/rgs.git"
-github_branch = "6.9-develop"
-local_repo_path = "/path/to/local/rgs"
-startup_dependencies = ["rgs-dp1", "rgs-dp2"]
-build_command.command = "mvn-rgs"
-build_command.args = ["clean", "install", "-DskipTests"]
-run_command.command = "mvn-rgs"
-run_command.args = ["clean", "install", "-DskipTests"]
-debug_command.command = "mvn-rgs"
-debug_command.args = ["clean", "install", "-DskipTests"]
+github_repo_url = "https://github.com/igt-playcasino/rgs.git"
+github_branch = "wangnile-rgs"
+local_repo_path = "/Users/quhao/Workspace/playcasino/rgs"
+startup_dependencies = [
+    "rgs-dp1",
+    "rgs-dp2",
+]
+build_command = "mvn clean package -DskipTests"
+run_command = "mvn clean package -DskipTests"
+debug_command = "mvn clean package -DskipTests"
+stop_command = "mvn clean package -DskipTests"
 
-[projects.cpt]
-name = "Competition Service"
-description = "Competition Service is one of the promotion service to make competitions."
-github_repo_url = "https://www.github.com/quhxuxm/cpt.git"
-github_branch = "6.9-develop"
-local_repo_path = "/path/to/local/cpt"
-startup_dependencies = ["cpt-dp1", "cpt-dp2"]
-build_command.command = "mvn-cpt"
-build_command.args = ["clean", "install", "-DskipTests"]
-run_command.command = "mvn-cpt"
-run_command.args = ["clean", "install", "-DskipTests"]
-debug_command.command = "mvn-cpt"
-debug_command.args = ["clean", "install", "-DskipTests"]
 
 [projects.pas]
 name = "PAS Service"
 description = "PAS Service is also named as player account service"
-github_repo_url = "https://www.github.com/quhxuxm/pas.git"
-github_branch = "6.9-develop"
-local_repo_path = "/path/to/local/pas"
-startup_dependencies = ["pas-dp1", "pas-dp2"]
-build_command.command = "mvn-pas"
-build_command.args = ["clean", "install", "-DskipTests"]
-run_command.command = "mvn-pas"
-run_command.args = ["clean", "install", "-DskipTests"]
-debug_command.command = "mvn-pas"
-debug_command.args = ["clean", "install", "-DskipTests"]
+github_repo_url = "https://github.com/igt-playcasino/pas.git"
+github_branch = "6.9.0-develop"
+local_repo_path = "/Users/quhao/Workspace/playcasino/pas"
+startup_dependencies = [
+    "pas-dp1",
+    "pas-dp2",
+]
+build_command = "mvn clean package -DskipTests"
+run_command = "mvn clean package -DskipTests"
+debug_command = "mvn clean package -DskipTests"
+stop_command = "mvn clean package -DskipTests"
+
+[projects.cpt]
+name = "Competition Service"
+description = "Competition Service is one of the promotion service to make competitions."
+github_repo_url = "https://github.com/igt-playcasino/competition.git"
+github_branch = "6.9.0-PR-4343"
+local_repo_path = "/Users/quhao/Workspace/playcasino/competition"
+startup_dependencies = [
+    "cpt-dp1",
+    "cpt-dp2",
+]
+build_command = "mvn clean package -DskipTests"
+run_command = "mvn clean package -DskipTests"
+debug_command = "mvn clean package -DskipTests"
+stop_command = "mvn clean package -DskipTests"
 
 [projects.nss]
 name = "NSS Service"
 description = "NSS Service is also named as native system service"
-github_repo_url = "https://www.github.com/quhxuxm/nss.git"
-github_branch = "6.9-develop"
-local_repo_path = "/path/to/local/nss"
-startup_dependencies = ["nss-dp1", "nss-dp2"]
-build_command.command = "mvn-nss"
-build_command.args = ["clean", "install", "-DskipTests"]
-run_command.command = "mvn-nss"
-run_command.args = ["clean", "install", "-DskipTests"]
-debug_command.command = "mvn-nss"
-debug_command.args = ["clean", "install", "-DskipTests"]
+github_repo_url = "https://github.com/igt-playcasino/nss.git"
+github_branch = "hailin/RGS-33207"
+local_repo_path = "/Users/quhao/Workspace/playcasino/nss"
+startup_dependencies = [
+    "nss-dp1",
+    "nss-dp2",
+]
+build_command = "mvn clean package -DskipTests"
+run_command = "mvn clean package -DskipTests"
+debug_command = "mvn clean package -DskipTests"
+stop_command = "mvn clean package -DskipTests"
