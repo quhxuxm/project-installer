@@ -22,9 +22,13 @@ pub struct ProjectConfig {
     pub github_branch: String,
     pub local_repo_path: PathBuf,
     pub build_command: Option<String>,
+    pub customized_build_command: Option<String>,
     pub run_command: Option<String>,
+    pub customized_run_command: Option<String>,
     pub debug_command: Option<String>,
+    pub customized_debug_command: Option<String>,
     pub stop_command: Option<String>,
+    pub customized_stop_command: Option<String>,
     pub startup_dependencies: Vec<ProjectId>,
 }
 

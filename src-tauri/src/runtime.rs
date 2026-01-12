@@ -34,6 +34,10 @@ pub struct ProjectRuntimeDetail {
     pub run_command: Option<String>,
     pub stop_command: Option<String>,
     pub debug_command: Option<String>,
+    pub customized_build_command: Option<String>,
+    pub customized_run_command: Option<String>,
+    pub customized_stop_command: Option<String>,
+    pub customized_debug_command: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -87,6 +91,10 @@ pub fn load_project_runtime_detail(project_id: &ProjectId) -> Result<ProjectRunt
         run_command: project_config.run_command.clone(),
         stop_command: project_config.stop_command.clone(),
         debug_command: project_config.debug_command.clone(),
+        customized_build_command: project_config.customized_build_command.clone(),
+        customized_run_command: project_config.customized_run_command.clone(),
+        customized_stop_command: project_config.customized_stop_command.clone(),
+        customized_debug_command: project_config.customized_debug_command.clone(),
     };
     Ok(project_runtime_detail)
 }

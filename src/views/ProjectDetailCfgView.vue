@@ -13,6 +13,10 @@ let currentRoute = useRoute();
 let loading = ref(true);
 
 let projectRuntimeDetail = ref<ProjectRuntimeDetail>({
+  customizedBuildCommand: undefined,
+  customizedDebugCommand: undefined,
+  customizedRunCommand: undefined,
+  customizedStopCommand: undefined,
   name: "",
   description: "",
   githubBranch: "",
@@ -37,9 +41,9 @@ function switchProjectDetail(projectId: string) {
       {projectId}
   ).then((backendData) => {
     projectRuntimeDetail.value = backendData;
-    buildCommandVal.value = backendData.buildCommand;
-    runCommandVal.value = backendData.runCommand;
-    debugCommandVal.value = backendData.debugCommand;
+    buildCommandVal.value = backendData.customizedBuildCommand ?? backendData.buildCommand;
+    runCommandVal.value = backendData.customizedRunCommand ?? backendData.runCommand;
+    debugCommandVal.value = backendData.customizedDebugCommand ?? backendData.debugCommand;
     loading.value = false;
   });
 }

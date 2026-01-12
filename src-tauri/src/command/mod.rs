@@ -37,9 +37,9 @@ pub async fn save_project(project_runtime_update: ProjectRuntimeUpdate) -> Resul
     project.local_repo_path = project_runtime_update.local_repo_path.into();
     project.github_branch = project_runtime_update.github_branch;
     project.github_repo_url = project_runtime_update.github_repo_url;
-    project.build_command = project_runtime_update.build_command;
-    project.run_command = project_runtime_update.run_command;
-    project.debug_command = project_runtime_update.debug_command;
+    project.customized_build_command = project_runtime_update.build_command;
+    project.customized_run_command = project_runtime_update.run_command;
+    project.customized_debug_command = project_runtime_update.debug_command;
     save_tool_config(&tool_config)?;
     Ok(())
 }

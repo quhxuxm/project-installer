@@ -6,7 +6,7 @@ pub mod repo;
 pub mod runtime;
 use command::{
     get_github_runtime_detail, get_project_code, get_project_runtime_detail,
-    get_project_runtime_summaries,
+    get_project_runtime_summaries, save_project,
 };
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -21,7 +21,8 @@ pub fn run() {
             get_github_runtime_detail,
             get_project_runtime_detail,
             get_project_runtime_summaries,
-            get_project_code
+            get_project_code,
+            save_project
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

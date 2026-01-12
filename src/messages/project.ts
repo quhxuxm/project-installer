@@ -16,6 +16,10 @@ export type ProjectRuntimeDetail = {
     runCommand: string | null | undefined;
     stopCommand: string | null | undefined;
     debugCommand: string | null | undefined;
+    customizedBuildCommand: string | null | undefined;
+    customizedRunCommand: string | null | undefined;
+    customizedStopCommand: string | null | undefined;
+    customizedDebugCommand: string | null | undefined;
 };
 
 export type ProjectRuntimeUpdate = {
