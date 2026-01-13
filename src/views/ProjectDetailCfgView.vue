@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import {useRoute} from "vue-router";
 import {ref, watch} from "vue";
-import ScrollPanel from "primevue/scrollpanel";
 import {Button, Column, DataTable, DataTableCellEditCompleteEvent, InputText, Select, SplitButton} from "primevue";
 import Fieldset from "primevue/fieldset";
 import {
@@ -160,7 +159,7 @@ const actionCommands = [
   <div v-if="loading" class="h-full flex flex-col justify-center align-center w-full">
     <h1 class="text-2xl text-primary text-center">Loading ...</h1>
   </div>
-  <ScrollPanel v-else class="h-full px-4">
+  <div v-else class="h-full px-4">
     <h1 class="text-2xl text-primary mb-4">
       {{ projectRuntimeDetail.name }}
     </h1>
@@ -304,5 +303,5 @@ const actionCommands = [
         <SplitButton :model="actionCommands" class="uppercase" label="SELECT A ACTION"></SplitButton>
       </div>
     </div>
-  </ScrollPanel>
+  </div>
 </template>
