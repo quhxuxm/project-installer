@@ -5,7 +5,7 @@ import {MenuItem} from "primevue/menuitem";
 import {invoke} from "@tauri-apps/api/core";
 import {GET_PROJECT_RUNTIME_SUMMARIES_CMD} from "./common.ts";
 import {ProjectRuntimeSummary} from "./messages/project.ts";
-import MessageArea from "./views/MessageArea.vue";
+import LogArea from "./views/LogArea.vue";
 
 let menuItems = ref<MenuItem[]>([]);
 
@@ -114,7 +114,7 @@ onMounted(async () => {
       </div>
     </SplitterPanel>
     <SplitterPanel class="flex flex-col h-4/11 w-full">
-      <MessageArea></MessageArea>
+      <LogArea></LogArea>
     </SplitterPanel>
   </Splitter>
 </template>
