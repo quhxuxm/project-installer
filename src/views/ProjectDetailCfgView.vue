@@ -208,14 +208,19 @@ const actionCommands = [
             >
             <InputText id="localRepoPath" v-model="projectRuntimeDetail.localRepoPath"/>
             <Message
-                class="text-gray-500 text-sm flex flex-col"
+                class="text-gray-500 text-sm flex flex-col gap-2"
                 severity="secondary"
                 size="small"
                 variant="simple"
             >
-              <span>Enter the local repository path, the concrete local path will be:</span>
+              <span>Enter the local repository path.</span>
+              <span>The concrete local path will be:</span>
               <span class="text-primary">
                 {{ projectRuntimeDetail.localRepoPath }}/{{ projectRuntimeDetail.githubBranch }}
+              </span>
+              <span>The customized properties directory path will be:</span>
+              <span class="text-primary">
+                {{ projectRuntimeDetail.localRepoPath }}/{{ projectRuntimeDetail.githubBranch }}-configuration
               </span>
             </Message>
           </div>
@@ -282,7 +287,7 @@ const actionCommands = [
               <Column body-class="text-xs w-1/11" field="value"
                       header-class="text-sm text-primary">
                 <template #body="{data }">
-                  <Button icon="pi pi-times" rounded severity="danger" size="small"
+                  <Button icon="pi pi-times" rounded severity="danger" size="small" variant="text"
                           @click="deleteCPProperty(data['key'])"/>
                 </template>
               </Column>
