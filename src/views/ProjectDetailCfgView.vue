@@ -122,6 +122,10 @@ function deleteCPProperty(key: string) {
 }
 
 function addCPProperty() {
+  let emptyItem = projectRuntimeDetail.value.customizedProperties.find((prop) => prop.key.trim().length == 0);
+  if (emptyItem) {
+    return
+  }
   projectRuntimeDetail.value.customizedProperties.push({
     key: "",
     value: ""
