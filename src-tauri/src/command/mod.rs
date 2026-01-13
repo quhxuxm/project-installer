@@ -4,11 +4,11 @@ use crate::command::message::ProjectRuntimeUpdate;
 
 use crate::config::{save_tool_config, TOOL_CONFIG};
 use crate::error::Error;
-use crate::repo;
 use crate::runtime::{
     load_github_runtime_detail, load_project_runtime_detail, load_project_runtime_summaries,
     GitHubRuntimeDetail, ProjectRuntimeDetail, ProjectRuntimeSummary,
 };
+use crate::{process, repo};
 use tracing::info;
 
 #[tauri::command]
@@ -50,4 +50,12 @@ pub async fn get_project_code(project_runtime_update: ProjectRuntimeUpdate) -> R
     let project_id = project_runtime_update.project_id.clone();
     save_project(project_runtime_update).await?;
     repo::get_project_github_code(&project_id.into())
+}
+
+#[tauri::command]
+pub async fn exec_build_process(project_runtime_update: ProjectRuntimeUpdate) -> Result<(), Error> {
+    info!("Receive project runtime update: {project_runtime_update:#?}");
+    let project_id = project_runtime_update.project_id.clone();
+    save_project(project_runtime_update).await?;
+    process::execute_build_process(&project_id.into())
 }

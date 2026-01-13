@@ -18,6 +18,12 @@ pub enum Error {
     SerializeTomlFail(#[from] toml::ser::Error),
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
+    #[error("Build command not found")]
+    BuildCommandNotFound(ProjectId),
+    #[error("Shell parse fail: {0}")]
+    ShellParseFail(#[from] shell_words::ParseError),
+    #[error("Program part not found: {0}")]
+    ProgramPartNotFound(ProjectId),
 }
 
 impl From<Error> for InvokeError {

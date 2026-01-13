@@ -4,7 +4,12 @@ import {ref, watch} from "vue";
 import ScrollPanel from "primevue/scrollpanel";
 import {Button, InputText, Select} from "primevue";
 import Fieldset from "primevue/fieldset";
-import {GET_PROJECT_CODE_CMD, GET_PROJECT_RUNTIME_DETAIL_CMD, SAVE_PROJECT_CMD,} from "../common.ts";
+import {
+  EXEC_BUILD_PROCESS,
+  GET_PROJECT_CODE_CMD,
+  GET_PROJECT_RUNTIME_DETAIL_CMD,
+  SAVE_PROJECT_CMD,
+} from "../common.ts";
 import {invoke} from "@tauri-apps/api/core";
 import {ProjectRuntimeDetail, ProjectRuntimeUpdate} from "../messages/project.ts";
 
@@ -82,6 +87,15 @@ function getProjectCode() {
 function saveProject() {
   let projectRuntimeUpdate = generateProjectUpdate();
   invoke(SAVE_PROJECT_CMD, {
+    projectRuntimeUpdate
+  }).catch((e) => {
+    console.log("Error happen when get project code: " + e);
+  })
+}
+
+function execBuildProcess() {
+  let projectRuntimeUpdate = generateProjectUpdate();
+  invoke(EXEC_BUILD_PROCESS, {
     projectRuntimeUpdate
   }).catch((e) => {
     console.log("Error happen when get project code: " + e);
@@ -197,7 +211,7 @@ function saveProject() {
       <div class="flex flex-row gap-4 m-4 justify-end">
         <Button class="uppercase" @click="saveProject">Save</Button>
         <Button class="uppercase" @click="getProjectCode">Get code</Button>
-        <Button class="uppercase">Build</Button>
+        <Button class="uppercase" @click="execBuildProcess">Build</Button>
         <Button class="uppercase">Run</Button>
         <Button class="uppercase">Debug</Button>
         <Button class="uppercase">Stop</Button>

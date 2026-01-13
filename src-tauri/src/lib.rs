@@ -2,10 +2,11 @@ mod command;
 mod common;
 mod config;
 pub mod error;
+pub mod process;
 pub mod repo;
 pub mod runtime;
 use command::{
-    get_github_runtime_detail, get_project_code, get_project_runtime_detail,
+    exec_build_process, get_github_runtime_detail, get_project_code, get_project_runtime_detail,
     get_project_runtime_summaries, save_project,
 };
 
@@ -22,7 +23,8 @@ pub fn run() {
             get_project_runtime_detail,
             get_project_runtime_summaries,
             get_project_code,
-            save_project
+            save_project,
+            exec_build_process
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
