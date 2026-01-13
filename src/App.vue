@@ -117,8 +117,6 @@ onMounted(async () => {
       <MessageArea></MessageArea>
     </SplitterPanel>
   </Splitter>
-
-
 </template>
 
 <style scoped></style>
