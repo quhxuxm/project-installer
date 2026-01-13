@@ -2,7 +2,7 @@
 import {useRoute} from "vue-router";
 import {ref, watch} from "vue";
 import ScrollPanel from "primevue/scrollpanel";
-import {Button, Column, DataTable, DataTableCellEditCompleteEvent, InputText, Select} from "primevue";
+import {Button, Column, DataTable, DataTableCellEditCompleteEvent, InputText, Select, SplitButton} from "primevue";
 import Fieldset from "primevue/fieldset";
 import {
   EXEC_BUILD_PROCESS,
@@ -39,6 +39,7 @@ let projectRuntimeDetail = ref<ProjectRuntimeDetail>({
 let buildCommandVal = ref();
 let runCommandVal = ref();
 let debugCommandVal = ref()
+
 
 function switchProjectDetail(projectId: string) {
   loading.value = true;
@@ -126,6 +127,27 @@ function addCPProperty() {
     value: ""
   })
 }
+
+
+const actionCommands = [
+  {
+    label: "SAVE CONFIGURATION",
+    command: saveProject
+  },
+  {
+    label: "BUILD PROJECT",
+    command: execBuildProcess
+  },
+  {
+    label: "RUN PROJECT",
+    command: execBuildProcess
+  },
+  {
+    label: "DEBUG PROJECT",
+    command: execBuildProcess
+  },
+
+]
 </script>
 
 <style scoped></style>
@@ -269,12 +291,8 @@ function addCPProperty() {
         </div>
       </Fieldset>
       <div class="flex flex-row gap-4 m-4 justify-end">
-        <Button class="uppercase" @click="saveProject">Save</Button>
         <Button class="uppercase" @click="getProjectCode">Get code</Button>
-        <Button class="uppercase" @click="execBuildProcess">Build</Button>
-        <Button class="uppercase">Run</Button>
-        <Button class="uppercase">Debug</Button>
-        <Button class="uppercase">Stop</Button>
+        <SplitButton :model="actionCommands" class="uppercase" label="SELECT A ACTION"></SplitButton>
       </div>
     </div>
   </ScrollPanel>
