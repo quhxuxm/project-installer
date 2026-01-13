@@ -1,5 +1,6 @@
 use crate::common::ProjectId;
 use serde::{Deserialize, Serialize};
+use crate::runtime::PropertyItem;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -11,4 +12,5 @@ pub struct ProjectRuntimeUpdate {
     pub build_command: Option<String>,
     pub debug_command: Option<String>,
     pub run_command: Option<String>,
+    pub customized_properties: Vec<PropertyItem>
 }

@@ -40,6 +40,9 @@ pub async fn save_project(project_runtime_update: ProjectRuntimeUpdate) -> Resul
     project.customized_build_command = project_runtime_update.build_command;
     project.customized_run_command = project_runtime_update.run_command;
     project.customized_debug_command = project_runtime_update.debug_command;
+    project.customized_properties =  project_runtime_update.customized_properties.iter().map(|item|{
+        (item.key.clone(), item.value.clone())
+    }).collect();
     save_tool_config(&tool_config)?;
     Ok(())
 }

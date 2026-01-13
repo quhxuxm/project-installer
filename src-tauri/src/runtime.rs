@@ -1,6 +1,6 @@
-use std::cmp::Ordering;
 use crate::{common::ProjectId, config::TOOL_CONFIG, error::Error, repo};
 use serde::{Deserialize, Serialize};
+use std::cmp::Ordering;
 use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -21,7 +21,7 @@ pub enum CurrentProcess {
     StopingApplication(String),
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, Ord)]
+#[derive(Debug, Serialize, Deserialize, Eq, Ord, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct PropertyItem {
     pub key: String,
