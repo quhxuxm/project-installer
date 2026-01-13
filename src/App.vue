@@ -67,9 +67,9 @@ onMounted(async () => {
 
 
   <Splitter class="h-screen w-screen" layout="vertical">
-    <SplitterPanel class="w-full h-3/5 gap-4 p-4">
+    <SplitterPanel class="w-full h-7/11 gap-4 p-4">
       <div class="h-full w-full">
-        <div class="h-full w-full flex flex-row gap-4">
+        <div class="h-full w-full flex flex-row gap-8">
           <Menu
               :model="menuItems"
               class="flex flex-col justify-start w-1/3 h-full md:w-70 overflow-y-auto px-3"
@@ -110,10 +110,9 @@ onMounted(async () => {
             <RouterView></RouterView>
           </ScrollPanel>
         </div>
-
       </div>
     </SplitterPanel>
-    <SplitterPanel class="flex flex-col h-2/5 w-full">
+    <SplitterPanel class="flex flex-col h-4/11 w-full">
       <div class="w-full h-full p-5 bg-amber-400"></div>
     </SplitterPanel>
   </Splitter>

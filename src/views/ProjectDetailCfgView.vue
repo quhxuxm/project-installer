@@ -159,7 +159,7 @@ const actionCommands = [
   <div v-if="loading" class="h-full flex flex-col justify-center align-center w-full">
     <h1 class="text-2xl text-primary text-center">Loading ...</h1>
   </div>
-  <div v-else class="h-full px-4">
+  <div v-else class="h-full">
     <h1 class="text-2xl text-primary mb-4">
       {{ projectRuntimeDetail.name }}
     </h1>
