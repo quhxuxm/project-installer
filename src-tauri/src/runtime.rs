@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use crate::{common::ProjectId, config::TOOL_CONFIG, error::Error, repo};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -20,6 +21,24 @@ pub enum CurrentProcess {
     StopingApplication(String),
 }
 
+#[derive(Debug, Serialize, Deserialize, Eq, Ord)]
+#[serde(rename_all = "camelCase")]
+pub struct PropertyItem {
+    pub key: String,
+    pub value: String,
+}
+
+impl PartialEq<Self> for PropertyItem {
+    fn eq(&self, other: &Self) -> bool {
+        self.key == other.key
+    }
+}
+
+impl PartialOrd for PropertyItem {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.key.partial_cmp(&other.key)
+    }
+}
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProjectRuntimeDetail {
@@ -38,6 +57,7 @@ pub struct ProjectRuntimeDetail {
     pub customized_run_command: Option<String>,
     pub customized_stop_command: Option<String>,
     pub customized_debug_command: Option<String>,
+    pub customized_properties: Vec<PropertyItem>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -79,6 +99,15 @@ pub fn load_project_runtime_detail(project_id: &ProjectId) -> Result<ProjectRunt
         .get(project_id)
         .ok_or(Error::ProjectNotFound(project_id.clone()))?;
     let available_github_branches = repo::get_project_github_branches(project_id)?;
+    let mut customized_properties = project_config
+        .customized_properties
+        .iter()
+        .map(|(key, value)| PropertyItem {
+            key: key.clone(),
+            value: value.clone(),
+        })
+        .collect::<Vec<PropertyItem>>();
+    customized_properties.sort();
     let project_runtime_detail = ProjectRuntimeDetail {
         name: project_config.name.clone(),
         description: project_config.description.clone(),
@@ -95,6 +124,7 @@ pub fn load_project_runtime_detail(project_id: &ProjectId) -> Result<ProjectRunt
         customized_run_command: project_config.customized_run_command.clone(),
         customized_stop_command: project_config.customized_stop_command.clone(),
         customized_debug_command: project_config.customized_debug_command.clone(),
+        customized_properties,
     };
     Ok(project_runtime_detail)
 }

@@ -4,6 +4,10 @@ export type ProjectRuntimeSummary = {
     description: string;
 };
 
+export type PropertyItem = {
+    key: string;
+    value: string
+}
 export type ProjectRuntimeDetail = {
     name: string;
     description: string;
@@ -20,6 +24,7 @@ export type ProjectRuntimeDetail = {
     customizedRunCommand: string | null | undefined;
     customizedStopCommand: string | null | undefined;
     customizedDebugCommand: string | null | undefined;
+    customizedProperties: PropertyItem[];
 };
 
 export type ProjectRuntimeUpdate = {
@@ -30,4 +35,5 @@ export type ProjectRuntimeUpdate = {
     buildCommand: string | null | undefined;
     runCommand: string | null | undefined;
     debugCommand: string | null | undefined;
+    customizedProperties: PropertyItem[];
 }

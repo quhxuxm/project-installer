@@ -2,7 +2,7 @@
 import {useRoute} from "vue-router";
 import {ref, watch} from "vue";
 import ScrollPanel from "primevue/scrollpanel";
-import {Button, InputText, Select} from "primevue";
+import {Button, Column, DataTable, DataTableCellEditCompleteEvent, InputText, Select} from "primevue";
 import Fieldset from "primevue/fieldset";
 import {
   EXEC_BUILD_PROCESS,
@@ -32,7 +32,8 @@ let projectRuntimeDetail = ref<ProjectRuntimeDetail>({
   buildCommand: undefined,
   runCommand: undefined,
   stopCommand: undefined,
-  debugCommand: undefined
+  debugCommand: undefined,
+  customizedProperties: []
 });
 
 let buildCommandVal = ref();
@@ -50,6 +51,9 @@ function switchProjectDetail(projectId: string) {
     runCommandVal.value = backendData.customizedRunCommand ?? backendData.runCommand;
     debugCommandVal.value = backendData.customizedDebugCommand ?? backendData.debugCommand;
     loading.value = false;
+    for (let prop of projectRuntimeDetail.value.customizedProperties) {
+      console.log(`Customized property - key: ${prop.key}, value: ${prop.value}`);
+    }
   });
 }
 
@@ -71,7 +75,8 @@ function generateProjectUpdate(): ProjectRuntimeUpdate {
     localRepoPath: projectRuntimeDetail.value.localRepoPath,
     runCommand: runCommandVal.value,
     projectId: currentRoute.params.id as string,
-    githubBranch: projectRuntimeDetail.value.githubBranch
+    githubBranch: projectRuntimeDetail.value.githubBranch,
+    customizedProperties: projectRuntimeDetail.value.customizedProperties
   };
 }
 
@@ -102,6 +107,25 @@ function execBuildProcess() {
   })
 }
 
+function onCPEditComplete(event: DataTableCellEditCompleteEvent) {
+  let {data, newValue, field} = event;
+  data[field] = newValue;
+  console.log("Row data: " + data)
+}
+
+function deleteCPProperty(key: string) {
+  projectRuntimeDetail.value.customizedProperties =
+      projectRuntimeDetail.value.customizedProperties.filter(
+          (prop) => prop.key !== key
+      );
+}
+
+function addCPProperty() {
+  projectRuntimeDetail.value.customizedProperties.push({
+    key: "",
+    value: ""
+  })
+}
 </script>
 
 <style scoped></style>
@@ -205,6 +229,42 @@ function execBuildProcess() {
                 variant="simple"
             >Enter the debug command.
             </Message>
+          </div>
+        </div>
+      </Fieldset>
+
+      <Fieldset class="text-xl  pb-3 pt-3" legend="Customized properties" toggleable>
+        <div class="flex flex-col gap-4">
+          <div class="flex flex-col gap-2 mb-4">
+            <DataTable :value="projectRuntimeDetail.customizedProperties" class="w-full" edit-mode="cell"
+                       scroll-height="400px"
+                       scrollable
+                       @cell-edit-complete="onCPEditComplete">
+              <Column body-class="text-xs w-5/11" field="key" header="Key" header-class="text-sm text-primary">
+                <template #editor="{ data, field }">
+                  <InputText v-model="data[field]" autofocus class="text-xs! w-fit h-fit" fluid
+                             style="padding: 0; margin: 0; border: 0"/>
+                </template>
+              </Column>
+              <Column body-class="text-xs w-5/11" field="value"
+                      header="Value" header-class="text-sm text-primary">
+                <template #editor="{ data, field }">
+                  <InputText v-model="data[field]" autofocus class="text-xs! w-fit h-fit" fluid
+                             style="padding: 0; margin: 0; border: 0"/>
+                </template>
+              </Column>
+              <Column body-class="text-xs w-1/11" field="value"
+                      header-class="text-sm text-primary">
+                <template #body="{data }">
+                  <Button icon="pi pi-times" rounded severity="danger" size="small"
+                          @click="deleteCPProperty(data['key'])"/>
+                </template>
+              </Column>
+            </DataTable>
+            <div class="flex flex-row justify-center">
+              <Button icon="pi pi-plus" rounded severity="primary" size="small" @click="addCPProperty"></Button>
+            </div>
+
           </div>
         </div>
       </Fieldset>
