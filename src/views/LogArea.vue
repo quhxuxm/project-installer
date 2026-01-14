@@ -8,7 +8,10 @@ import {BACKEND_EVENT_LOG_MESSAGE} from "../common.ts";
 let logEvents = ref<LogEvent[]>([]);
 
 listen(BACKEND_EVENT_LOG_MESSAGE, (event: Event<LogEvent>) => {
-  logEvents.value.push(event.payload)
+  logEvents.value.push(event.payload);
+  while (logEvents.value.length > 100) {
+    logEvents.value.shift();
+  }
 })
 
 </script>
