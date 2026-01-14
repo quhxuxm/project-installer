@@ -8,10 +8,10 @@ import {BACKEND_EVENT_LOG_MESSAGE} from "../common.ts";
 let logEvents = ref<LogEvent[]>([]);
 
 listen(BACKEND_EVENT_LOG_MESSAGE, (event: Event<LogEvent>) => {
-  logEvents.value.push(event.payload);
-  while (logEvents.value.length > 100) {
-    logEvents.value.shift();
-  }
+    logEvents.value.push(event.payload);
+    while (logEvents.value.length > 100) {
+        logEvents.value.shift();
+    }
 })
 
 </script>
@@ -21,53 +21,53 @@ listen(BACKEND_EVENT_LOG_MESSAGE, (event: Event<LogEvent>) => {
 </style>
 
 <template>
-  <div class="w-full h-full">
-    <DataTable :value="logEvents" column-resize-mode="fit" resizableColumns scrollHeight="400px" scrollable
-               showGridlines
-               stripedRows
-               table-style="min-width: 50rem">
-      <Column class="w-1/7" field="projectId" header="PROJECT" header-class="text-sm">
-        <template #body="slot">
+    <div class="w-full h-full flex flex-col">
+        <DataTable :value="logEvents" class="h-full grow" column-resize-mode="fit" resizableColumns scrollHeight="100%"
+                   scrollable
+                   showGridlines
+                   stripedRows table-style="min-width: 50rem">
+            <Column class="w-1/7" field="projectId" header="PROJECT" header-class="text-sm">
+                <template #body="slot">
           <span :class="slot.data.level.toLowerCase()" class="text-wrap w-full text-xs uppercase"
                 style="user-select: auto">
             {{ slot.data.projectId }}
           </span>
-        </template>
-      </Column>
-      <Column class="w-1/7" field="level" header="LEVEL" header-class="text-sm">
-        <template #body="slot">
+                </template>
+            </Column>
+            <Column class="w-1/7" field="level" header="LEVEL" header-class="text-sm">
+                <template #body="slot">
           <span :class="slot.data.level.toLowerCase()" class="text-wrap w-full text-xs uppercase"
                 style="user-select: auto">
             {{ slot.data.level }}
           </span>
-        </template>
-      </Column>
-      <Column class="w-5/7" field="message" header="MESSAGE" header-class="text-sm">
-        <template #body="slot">
+                </template>
+            </Column>
+            <Column class="w-5/7" field="message" header="MESSAGE" header-class="text-sm">
+                <template #body="slot">
           <span :class="slot.data.level.toLowerCase()" class="text-wrap w-full text-xs" style="user-select: auto">
             {{ slot.data.message }}
           </span>
-        </template>
-        >
-      </Column>
-    </DataTable>
-  </div>
+                </template>
+                >
+            </Column>
+        </DataTable>
+    </div>
 </template>
 <style scoped>
 .info {
-  color: #029310; /* Blue for info */
+    color: #029310; /* Blue for info */
 }
 
 .error {
-  color: #ff0000; /* Blue for info */
+    color: #ff0000; /* Blue for info */
 }
 
 .warn {
-  color: #ff8800; /* Blue for info */
+    color: #ff8800; /* Blue for info */
 }
 
 .debug {
-  color: #003cff;
+    color: #003cff;
 }
 </style>
 

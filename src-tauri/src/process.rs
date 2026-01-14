@@ -4,7 +4,7 @@ use crate::common::{parse_log_level_for_frontend, ProjectId};
 use crate::config::{ProjectConfig, TOOL_CONFIG};
 use crate::error::Error;
 use std::io::{BufRead, BufReader};
-use std::process::{Command, Stdio};
+use std::process::Stdio;
 use std::thread;
 use tauri::{AppHandle, Emitter};
 use tracing::{error, info};
@@ -15,13 +15,8 @@ fn execute_program(
     command: &str,
     project_config: &ProjectConfig,
 ) -> Result<(), Error> {
-    info!("Executing: {}", command);
-    let shell = shell_words::split(command)?;
-    let (program, args) = shell
-        .split_first()
-        .ok_or(Error::ProgramPartNotFound(project_id.clone()))?;
-    let mut child = Command::new(program)
-        .args(args)
+    let mut child = execute::command("cmd")
+        .args(["/C", command])
         .stdout(Stdio::piped())
         .current_dir(
             project_config
