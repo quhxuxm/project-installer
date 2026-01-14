@@ -1,8 +1,11 @@
 use std::env::temp_dir;
 
+use crate::command::message::{LogEvent, LogLevel};
+use crate::common::BackendEvent::LogMessage;
 use crate::{common::ProjectId, config::TOOL_CONFIG, error::Error};
 use git2::{build::RepoBuilder, Cred, FetchOptions, ProxyOptions, RemoteCallbacks, Repository};
-use tracing::{debug, info};
+use tauri::{AppHandle, Emitter};
+use tracing::error;
 
 #[derive(Debug)]
 pub struct GetBranchesRequest {
@@ -10,7 +13,10 @@ pub struct GetBranchesRequest {
     pub github_repo_url: String,
 }
 
-pub fn get_project_github_code(project_id: &ProjectId) -> Result<(), Error> {
+pub fn get_project_github_code(
+    app_handle: &AppHandle,
+    project_id: &ProjectId,
+) -> Result<(), Error> {
     let tool_config = TOOL_CONFIG.read().map_err(|_| Error::LockFail)?;
     let github_config = &tool_config.github;
     let projects_config = &tool_config.projects;
@@ -25,7 +31,16 @@ pub fn get_project_github_code(project_id: &ProjectId) -> Result<(), Error> {
     callbacks.transfer_progress(|progress| {
         let received_objects = progress.received_objects();
         let total_objects = progress.total_objects();
-        debug!("Receiving data from GitHub: {received_objects}/{total_objects}");
+        if let Err(e) = app_handle.emit(
+            LogMessage.to_string().as_str(),
+            LogEvent {
+                project_id: project_id.clone(),
+                message: format!("Receiving data from GitHub: {received_objects}/{total_objects}"),
+                level: LogLevel::Debug,
+            },
+        ) {
+            error!("Fail to emit backend event to frontend: {e:?}")
+        };
         true
     });
     let mut fetch_options = FetchOptions::new();
@@ -38,10 +53,19 @@ pub fn get_project_github_code(project_id: &ProjectId) -> Result<(), Error> {
     let project_local_path = project_config
         .local_repo_path
         .join(&project_config.github_branch);
-    info!(
-        "Cloning from GitHub: {} to {project_local_path:?}",
-        project_config.github_repo_url
-    );
+    if let Err(e) = app_handle.emit(
+        LogMessage.to_string().as_str(),
+        LogEvent {
+            project_id: project_id.clone(),
+            message: format!(
+                "Cloning data from GitHub: {} to {:?}",
+                project_config.github_repo_url, project_local_path
+            ),
+            level: LogLevel::Info,
+        },
+    ) {
+        error!("Fail to emit backend event to frontend: {e:?}")
+    };
     if project_local_path.exists() {
         let repository = Repository::open(&project_local_path)?;
         repository.find_remote("origin")?.fetch(
@@ -55,11 +79,19 @@ pub fn get_project_github_code(project_id: &ProjectId) -> Result<(), Error> {
         builder.branch(&project_config.github_branch);
         builder.clone(&project_config.github_repo_url, &project_local_path)?;
     }
-
-    info!(
-        "Complete to clone from GitHub: {} to {project_local_path:?}",
-        project_config.github_repo_url
-    );
+    if let Err(e) = app_handle.emit(
+        LogMessage.to_string().as_str(),
+        LogEvent {
+            project_id: project_id.clone(),
+            message: format!(
+                "Complete to clone data from GitHub: {} to {:?}",
+                project_config.github_repo_url, project_local_path
+            ),
+            level: LogLevel::Info,
+        },
+    ) {
+        error!("Fail to emit backend event to frontend: {e:?}")
+    };
     Ok(())
 }
 

@@ -11,8 +11,7 @@ export enum LogSource {
 }
 
 export type LogEvent = {
+    projectId: string;
     level: LogLevel;
-    date: Date;
     message: string;
-    source: LogSource;
 }

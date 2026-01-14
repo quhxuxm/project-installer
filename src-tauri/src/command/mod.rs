@@ -1,6 +1,7 @@
-mod message;
+pub mod message;
 
 use crate::command::message::ProjectRuntimeUpdate;
+use tauri::AppHandle;
 
 use crate::config::{save_tool_config, TOOL_CONFIG};
 use crate::error::Error;
@@ -40,25 +41,33 @@ pub async fn save_project(project_runtime_update: ProjectRuntimeUpdate) -> Resul
     project.customized_build_command = project_runtime_update.build_command;
     project.customized_run_command = project_runtime_update.run_command;
     project.customized_debug_command = project_runtime_update.debug_command;
-    project.customized_properties =  project_runtime_update.customized_properties.iter().map(|item|{
-        (item.key.clone(), item.value.clone())
-    }).collect();
+    project.customized_properties = project_runtime_update
+        .customized_properties
+        .iter()
+        .map(|item| (item.key.clone(), item.value.clone()))
+        .collect();
     save_tool_config(&tool_config)?;
     Ok(())
 }
 
 #[tauri::command]
-pub async fn get_project_code(project_runtime_update: ProjectRuntimeUpdate) -> Result<(), Error> {
+pub async fn get_project_code(
+    app_handle: AppHandle,
+    project_runtime_update: ProjectRuntimeUpdate,
+) -> Result<(), Error> {
     info!("Receive project runtime update: {project_runtime_update:#?}");
     let project_id = project_runtime_update.project_id.clone();
     save_project(project_runtime_update).await?;
-    repo::get_project_github_code(&project_id.into())
+    repo::get_project_github_code(&app_handle, &project_id.into())
 }
 
 #[tauri::command]
-pub async fn exec_build_process(project_runtime_update: ProjectRuntimeUpdate) -> Result<(), Error> {
+pub async fn exec_build_process(
+    app_handle: AppHandle,
+    project_runtime_update: ProjectRuntimeUpdate,
+) -> Result<(), Error> {
     info!("Receive project runtime update: {project_runtime_update:#?}");
     let project_id = project_runtime_update.project_id.clone();
     save_project(project_runtime_update).await?;
-    process::execute_build_process(&project_id.into())
+    process::execute_build_process(&app_handle, &project_id.into())
 }
