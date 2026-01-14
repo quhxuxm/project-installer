@@ -1,12 +1,10 @@
-use std::env::temp_dir;
-
 use crate::command::message::{LogEvent, LogLevel};
 use crate::common::BackendEvent::LogMessage;
+use crate::common::RGS_PMT_DIR;
 use crate::{common::ProjectId, config::TOOL_CONFIG, error::Error};
 use git2::{build::RepoBuilder, Cred, FetchOptions, ProxyOptions, RemoteCallbacks, Repository};
 use tauri::{AppHandle, Emitter};
 use tracing::error;
-use crate::common::RGS_PMT_DIR;
 
 #[derive(Debug)]
 pub struct GetBranchesRequest {
