@@ -68,7 +68,7 @@ onMounted(async () => {
 
 
   <Splitter class="h-screen w-screen" layout="vertical">
-    <SplitterPanel class="w-full h-7/11 gap-4 p-4">
+    <SplitterPanel class="w-full h-7/11 gap-4 p-4" style="user-select: none">
       <div class="h-full w-full">
         <div class="h-full w-full flex flex-row gap-8">
           <Menu
@@ -113,7 +113,7 @@ onMounted(async () => {
         </div>
       </div>
     </SplitterPanel>
-    <SplitterPanel class="flex flex-col h-4/11 w-full">
+    <SplitterPanel class="flex flex-col h-4/11 w-full" style="user-select: none">
       <LogArea></LogArea>
     </SplitterPanel>
   </Splitter>

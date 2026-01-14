@@ -6,6 +6,7 @@ use crate::{common::ProjectId, config::TOOL_CONFIG, error::Error};
 use git2::{build::RepoBuilder, Cred, FetchOptions, ProxyOptions, RemoteCallbacks, Repository};
 use tauri::{AppHandle, Emitter};
 use tracing::error;
+use crate::common::RGS_PMT_DIR;
 
 #[derive(Debug)]
 pub struct GetBranchesRequest {
@@ -111,8 +112,7 @@ pub fn get_project_github_branches(project_id: &ProjectId) -> Result<Vec<String>
         proxy_options.url(url);
         proxy_options
     });
-    let temp_dir = temp_dir();
-    let temp_repo = Repository::init_bare(&temp_dir)?;
+    let temp_repo = Repository::init_bare(project_config.local_repo_path.join(RGS_PMT_DIR))?;
     let mut remote = temp_repo.remote_anonymous(&project_config.github_repo_url)?;
     remote.connect_auth(git2::Direction::Fetch, Some(callbacks), proxy_options)?;
     let remote_refs = remote.list()?;

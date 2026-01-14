@@ -1,9 +1,10 @@
+use crate::command::message::LogLevel;
+use derive_more::Display;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use std::ops::Deref;
-use derive_more::Display;
-use crate::command::message::LogLevel;
 
+pub static RGS_PMT_DIR: &str = ".rgspmt";
 #[derive(Debug, Copy, Clone, Display)]
 pub enum BackendEvent {
     #[display("__backend_event_log_message__")]
@@ -37,16 +38,16 @@ impl From<&str> for ProjectId {
     }
 }
 
-pub fn parse_log_level_for_frontend(line: &str)->LogLevel{
+pub fn parse_log_level_for_frontend(line: &str) -> LogLevel {
     if line.to_uppercase().contains("[ERROR]") {
         LogLevel::Error
-    }else{
+    } else {
         if line.to_uppercase().contains("[DEBUG]") {
             LogLevel::Debug
-        }else{
+        } else {
             if line.to_uppercase().contains("[WARN]") {
                 LogLevel::Warn
-            }else{
+            } else {
                 LogLevel::Info
             }
         }
