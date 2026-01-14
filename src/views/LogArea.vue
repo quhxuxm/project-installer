@@ -26,21 +26,21 @@ listen(BACKEND_EVENT_LOG_MESSAGE, (event: Event<LogEvent>) => {
                showGridlines
                stripedRows
                table-style="min-width: 50rem">
-      <Column class="w-1/5" field="projectId" header="PROJECT" header-class="text-sm">
+      <Column class="w-1/7" field="projectId" header="PROJECT" header-class="text-sm">
         <template #body="slot">
           <span :class="slot.data.level.toLowerCase()" class="text-wrap w-full text-xs uppercase">
             {{ slot.data.projectId }}
           </span>
         </template>
       </Column>
-      <Column class="w-1/5" field="level" header="LEVEL" header-class="text-sm">
+      <Column class="w-1/7" field="level" header="LEVEL" header-class="text-sm">
         <template #body="slot">
           <span :class="slot.data.level.toLowerCase()" class="text-wrap w-full text-xs uppercase">
             {{ slot.data.level }}
           </span>
         </template>
       </Column>
-      <Column class="w-3/5" field="message" header="MESSAGE" header-class="text-sm">
+      <Column class="w-5/7" field="message" header="MESSAGE" header-class="text-sm">
         <template #body="slot">
           <span :class="slot.data.level.toLowerCase()" class="text-wrap w-full text-xs">
             {{ slot.data.message }}
