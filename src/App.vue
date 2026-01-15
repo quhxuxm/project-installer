@@ -1,122 +1,74 @@
 <script lang="ts" setup>
 import {onMounted, ref} from "vue";
-import {Menu, ScrollPanel, Splitter, SplitterPanel} from "primevue";
-import {MenuItem} from "primevue/menuitem";
+import {Splitter, SplitterPanel} from "primevue";
 import {invoke} from "@tauri-apps/api/core";
 import {GET_PROJECT_RUNTIME_SUMMARIES_CMD} from "./common.ts";
 import {ProjectRuntimeSummary} from "./messages/project.ts";
 import LogArea from "./views/LogArea.vue";
 
-let menuItems = ref<MenuItem[]>([]);
+let projectRuntimeSummaries = ref<ProjectRuntimeSummary[]>([]);
 
 onMounted(async () => {
-  let projectRuntimeSummaries = await invoke<ProjectRuntimeSummary[]>(
-      GET_PROJECT_RUNTIME_SUMMARIES_CMD,
-  );
-  let projectMenuItems = new Array<MenuItem>();
-
-  projectRuntimeSummaries.forEach((projectRuntimeSummary) => {
-    let item = {
-      id: projectRuntimeSummary.projectId,
-      label: projectRuntimeSummary.name,
-      icon: "pi pi-server",
-      route: `/project/${projectRuntimeSummary.projectId}`,
-    };
-    projectMenuItems.push(item);
-  });
-  console.log(projectMenuItems);
-  menuItems.value = [
-    {
-      label: "General",
-      items: [
-        {
-          label: "GitHub",
-          icon: "pi pi-github",
-          route: "/github",
-        },
-        {
-          label: "Java",
-          icon: "pi pi-android",
-          route: "/java",
-        },
-        {
-          label: "Maven",
-          icon: "pi pi-wallet",
-          route: "/maven",
-        },
-        {
-          label: "Kafka",
-          icon: "pi pi-shop",
-          route: "/kafka",
-        },
-        {
-          label: "Node JS",
-          icon: "pi pi-receipt",
-          route: "/nodejs",
-        },
-      ],
-    },
-    {
-      label: "Projects",
-      items: projectMenuItems,
-    },
-  ];
+    projectRuntimeSummaries.value = await invoke<ProjectRuntimeSummary[]>(GET_PROJECT_RUNTIME_SUMMARIES_CMD);
 });
 </script>
 
 <template>
-
-
-  <Splitter class="h-screen w-screen" layout="vertical">
-    <SplitterPanel class="w-full h-7/11 gap-4 p-4" style="user-select: none">
-      <div class="h-full w-full">
-        <div class="h-full w-full flex flex-row gap-8">
-          <Menu
-              :model="menuItems"
-              class="flex flex-col justify-start w-1/3 h-full md:w-70 overflow-y-auto px-3"
-          >
-            <template #start>
-                <span class="inline-flex items-center gap-1 px-2 py-2">
-                    <span class="text-xl font-black">
-                        RGS<span class="text-primary">PROJECTS</span>
-                    </span>
-                </span>
-            </template>
-            <template #submenuheader="{ item: subMenuItem }">
-                <span class="text-primary uppercase">{{
-                    subMenuItem.label
-                  }}</span>
-            </template>
-            <template #item="{ item: subMenuItem }">
-              <router-link
-                  v-if="subMenuItem.route"
-                  v-slot="{ href, navigate }"
-                  :to="subMenuItem.route"
-                  custom
-              >
-                <a
-                    :href="href"
-                    class="flex items-center px-4 py-2 cursor-pointer group"
-                    @click="navigate"
-                >
-                  <span :class="subMenuItem.icon"/>
-                  <span class="ml-2 uppercase text-sm">{{
-                      subMenuItem.label
-                    }}</span>
-                </a>
-              </router-link>
-            </template>
-          </Menu>
-          <ScrollPanel class="h-full grow">
-            <RouterView></RouterView>
-          </ScrollPanel>
+    <div class="h-screen w-screen p-2 flex flex-col">
+        <div class="flex flex-row justify-start h-1/12">
+            <span class="inline-flex items-center gap-1 px-2 py-2 grow">
+                <span class="text-2xl font-black"> RGS<span
+                    class="text-primary">PROJECTS</span></span>
+            </span>
         </div>
-      </div>
-    </SplitterPanel>
-    <SplitterPanel class="flex flex-col h-4/11 w-full" style="user-select: none">
-      <LogArea></LogArea>
-    </SplitterPanel>
-  </Splitter>
+        <Splitter class="grow h-11/12" layout="vertical">
+            <SplitterPanel :size="80" class="w-full" style="user-select: none">
+                <Splitter class="w-full h-full">
+                    <SplitterPanel :size="20" class="flex flex-col justify-start p-4">
+                        <ul class="overflow-y-auto">
+                            <li>
+                            <span
+                                class="inline-flex items-center gap-1 px-2 py-2 uppercase text-lg font-black">General</span>
+                            </li>
+                            <li>
+                                <router-link v-slot="{ href, navigate }" custom to="/github">
+                                    <a :href="href" class="flex items-center px-4 py-2 cursor-pointer group"
+                                       @click="navigate">
+                                        <span class="pi pi-github"/>
+                                        <span class="ml-2 uppercase text-sm">GITHUB</span>
+                                    </a>
+                                </router-link>
+                            </li>
+                            <li>
+                            <span
+                                class="inline-flex items-center gap-1 px-2 py-2 uppercase text-lg font-black">Projects</span>
+                            </li>
+                            <li v-for="project in projectRuntimeSummaries">
+                                <router-link v-slot="{ href, navigate }" :to="'/project/'+project.projectId" custom>
+                                    <a :href="href" class="flex items-center px-4 py-2 cursor-pointer group"
+                                       @click="navigate">
+                                        <span class="pi pi-server"/>
+                                        <span class="ml-2 uppercase text-sm">{{ project.name }}</span>
+                                    </a>
+                                </router-link>
+                            </li>
+                        </ul>
+                    </SplitterPanel>
+                    <SplitterPanel :size="80" class="flex flex-col justify-start">
+                        <div class="h-full w-full grow overflow-y-auto p-8">
+                            <RouterView></RouterView>
+                        </div>
+                    </SplitterPanel>
+                </Splitter>
+            </SplitterPanel>
+            <SplitterPanel :size="20" class="flex flex-col h-4/11 w-full" style="user-select: none">
+                <LogArea></LogArea>
+            </SplitterPanel>
+        </Splitter>
+    </div>
+
 </template>
 
-<style scoped></style>
+<style scoped>
+
+</style>
