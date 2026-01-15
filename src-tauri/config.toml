@@ -3,6 +3,26 @@ username = "quhxuxm"
 token = ""
 proxy = "http://127.0.0.1:10080"
 
+[projects.jrs]
+name = "Jurisdiction Service"
+description = "The Jurisdiction service."
+github_repo_url = "https://github.com/igt-playcasino/jrs.git"
+github_branch = "6.10.0-develop"
+local_repo_path = 'D:\Workspace\GitHub\playcasino\jrs'
+build_command = "mvn clean package -DskipTests"
+customized_build_command = 'mvn clean package -DskipTests -f ruleengine/pom.xml'
+run_command = "mvn clean package -DskipTests"
+customized_run_command = "mvn clean package -DskipTests"
+debug_command = "mvn clean package -DskipTests"
+customized_debug_command = "mvn clean package -DskipTests"
+stop_command = "mvn clean package -DskipTests"
+startup_dependencies = [
+    "rgs-dp1",
+    "rgs-dp2",
+]
+
+[projects.jrs.customized_properties]
+
 [projects.ruleengine]
 name = "Rule Engine Service"
 description = "The Rule Engine service."
