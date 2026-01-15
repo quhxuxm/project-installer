@@ -19,6 +19,7 @@ pub fn clone_code(
     project_id: &ProjectId,
     response_channel: Channel<bool>,
 ) -> Result<(), Error> {
+    std::env::set_var("GIT_CONFIG_PARAMETERS", "'core.longpaths=true'");
     let project_id = project_id.clone();
     let app_handle = app_handle.clone();
     tauri::async_runtime::spawn(async move {
@@ -105,6 +106,7 @@ pub fn clone_code(
                     return;
                 }
             };
+
             let mut repository = match repository.find_remote("origin") {
                 Ok(repository) => repository,
                 Err(e) => {
