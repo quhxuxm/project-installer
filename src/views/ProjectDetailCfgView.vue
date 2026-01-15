@@ -171,11 +171,11 @@ const actionCommands = [
         <h1 class="text-2xl text-primary text-center">Loading ...</h1>
     </div>
     <div v-else class="h-full w-full flex flex-col gap-4 justify-self-center">
-        <h1 class="text-2xl text-primary mb-4">
+        <h1 class="text-2xl text-primary mb-4 uppercase">
             {{ projectRuntimeDetail.name }}
         </h1>
         <div class="flex flex-col gap-4">
-            <Fieldset class="text-xl pb-3 pt-3" legend="Repository configuration" toggleable>
+            <Fieldset class="text-xl pb-3 pt-3" legend="REPOSITORY CONFIGURATION" toggleable>
                 <div class="flex flex-col gap-4">
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="githubBranch">Branch</label>
@@ -210,7 +210,7 @@ const actionCommands = [
                     </div>
                 </div>
             </Fieldset>
-            <Fieldset class="text-xl pb-3 pt-3" legend="Command configuration" toggleable>
+            <Fieldset class="text-xl pb-3 pt-3" legend="COMMAND CONFIGURATION" toggleable>
                 <div class="flex flex-col gap-4">
                     <div class="flex flex-col gap-2 mb-4">
                         <label class="text-lg" for="buildCommand">Build command</label>
@@ -236,7 +236,7 @@ const actionCommands = [
                 </div>
             </Fieldset>
 
-            <Fieldset class="text-xl pb-3 pt-3" legend="Customized properties" toggleable>
+            <Fieldset class="text-xl pb-3 pt-3" legend="CISTOMIZED PROPERTIES" toggleable>
                 <div class="flex flex-col gap-4">
                     <div class="flex flex-col gap-2 mb-4">
                         <DataTable

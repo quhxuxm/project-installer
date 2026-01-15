@@ -24,7 +24,7 @@ onMounted(async () => {
         <Splitter class="grow h-11/12" layout="vertical">
             <SplitterPanel :size="80" class="w-full" style="user-select: none">
                 <Splitter class="w-full h-full">
-                    <SplitterPanel :size="20" class="flex flex-col justify-start pt-4 pl-4">
+                    <SplitterPanel :size="20" class="flex flex-col justify-start pt-2 pl-2">
                         <ul class="overflow-y-auto h-full w-full">
                             <li style="text-wrap: nowrap">
                                 <span
@@ -55,7 +55,7 @@ onMounted(async () => {
                         </ul>
                     </SplitterPanel>
                     <SplitterPanel :size="80" class="flex flex-col justify-start">
-                        <div class="h-full w-full grow overflow-y-auto p-8">
+                        <div class="h-full w-full grow overflow-y-auto pt-8 pb-8 pl-16 pr-16">
                             <RouterView></RouterView>
                         </div>
                     </SplitterPanel>

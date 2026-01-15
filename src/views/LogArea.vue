@@ -26,27 +26,28 @@ listen(BACKEND_EVENT_LOG_MESSAGE, (event: Event<LogEvent>) => {
                    scrollable
                    showGridlines
                    stripedRows table-style="min-width: 50rem">
-            <Column class="w-1/11" field="projectId" header="PROJECT" header-class="text-sm">
+            <Column class="w-1/12" field="projectId" header="PROJECT" header-class="text-sm">
                 <template #body="slot">
-          <span :class="slot.data.level.toLowerCase()" class="text-wrap w-full text-xs uppercase"
-                style="user-select: auto">
-            {{ slot.data.projectId }}
-          </span>
+                  <span :class="slot.data.level.toLowerCase()" class="text-wrap w-full text-xs uppercase"
+                        style="user-select: auto">
+                    {{ slot.data.projectId }}
+                  </span>
                 </template>
             </Column>
-            <Column class="w-1/11" field="level" header="LOG LEVEL" header-class="text-sm">
+            <!--            <Column class="w-1/11" field="level" header="LOG LEVEL" header-class="text-sm">-->
+            <!--                <template #body="slot">-->
+            <!--                  <span :class="slot.data.level.toLowerCase()" class="text-wrap w-full text-xs uppercase"-->
+            <!--                        style="user-select: auto">-->
+            <!--                    {{ slot.data.level }}-->
+            <!--                  </span>-->
+            <!--                </template>-->
+            <!--            </Column>-->
+            <Column class="w-11/12" field="message" header="MESSAGE" header-class="text-sm">
                 <template #body="slot">
-          <span :class="slot.data.level.toLowerCase()" class="text-wrap w-full text-xs uppercase"
-                style="user-select: auto">
-            {{ slot.data.level }}
-          </span>
-                </template>
-            </Column>
-            <Column class="w-9/11" field="message" header="MESSAGE" header-class="text-sm">
-                <template #body="slot">
-          <span :class="slot.data.level.toLowerCase()" class="text-wrap w-full text-xs" style="user-select: auto">
-            {{ slot.data.message }}
-          </span>
+                  <span :class="slot.data.level.toLowerCase()" class="text-wrap w-full text-xs"
+                        style="user-select: auto">
+                    {{ slot.data.message }}
+                  </span>
                 </template>
                 >
             </Column>
