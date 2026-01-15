@@ -56,7 +56,7 @@ listen(BACKEND_EVENT_LOG_MESSAGE, (event: Event<LogEvent>) => {
 </template>
 <style scoped>
 .info {
-    color: #029310; /* Blue for info */
+    color: #333333; /* Blue for info */
 }
 
 .error {

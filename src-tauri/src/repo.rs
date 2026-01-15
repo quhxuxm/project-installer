@@ -1,7 +1,5 @@
 use crate::command::message::LogLevel;
-use crate::common::{
-    push_complete_status_to_frontend, push_global_log_message_to_frontend, RGS_PMT_DIR,
-};
+use crate::common::{ack_frontend_action, push_log_to_frontend, RGS_PMT_DIR};
 use crate::{common::ProjectId, config::TOOL_CONFIG, error::Error};
 use git2::{build::RepoBuilder, Cred, FetchOptions, ProxyOptions, RemoteCallbacks, Repository};
 use tauri::ipc::Channel;
@@ -26,8 +24,8 @@ pub fn clone_code(
         let tool_config = match TOOL_CONFIG.read().map_err(|_| Error::LockFail) {
             Ok(config) => config,
             Err(e) => {
-                push_complete_status_to_frontend(&response_channel);
-                push_global_log_message_to_frontend(
+                ack_frontend_action(&response_channel);
+                push_log_to_frontend(
                     &app_handle,
                     &project_id,
                     format!("Fail to get tool config: {e}"),
@@ -41,8 +39,8 @@ pub fn clone_code(
         let project_config = match projects_config.get(&project_id) {
             Some(project_config) => project_config,
             None => {
-                push_complete_status_to_frontend(&response_channel);
-                push_global_log_message_to_frontend(
+                ack_frontend_action(&response_channel);
+                push_log_to_frontend(
                     &app_handle,
                     &project_id,
                     format!("Fail to get project config: {project_id}"),
@@ -58,7 +56,7 @@ pub fn clone_code(
         callbacks.transfer_progress(|progress| {
             let received_objects = progress.received_objects();
             let total_objects = progress.total_objects();
-            push_global_log_message_to_frontend(
+            push_log_to_frontend(
                 &app_handle,
                 &project_id,
                 format!("Receiving data from GitHub: {received_objects}/{total_objects}"),
@@ -76,7 +74,7 @@ pub fn clone_code(
         let project_local_path = project_config
             .local_repo_path
             .join(&project_config.github_branch);
-        push_global_log_message_to_frontend(
+        push_log_to_frontend(
             &app_handle,
             &project_id,
             format!(
@@ -93,8 +91,8 @@ pub fn clone_code(
                         "Fail to clone data from GitHib: {} to {:?} because of error: {e:?}",
                         project_config.github_repo_url, project_local_path
                     );
-                    push_complete_status_to_frontend(&response_channel);
-                    push_global_log_message_to_frontend(
+                    ack_frontend_action(&response_channel);
+                    push_log_to_frontend(
                         &app_handle,
                         &project_id,
                         format!(
@@ -114,8 +112,8 @@ pub fn clone_code(
                         "Fail to clone data from GitHib: {} to {:?} because of error: {e:?}",
                         project_config.github_repo_url, project_local_path
                     );
-                    push_complete_status_to_frontend(&response_channel);
-                    push_global_log_message_to_frontend(
+                    ack_frontend_action(&response_channel);
+                    push_log_to_frontend(
                         &app_handle,
                         &project_id,
                         format!(
@@ -137,8 +135,8 @@ pub fn clone_code(
                     "Fail to clone data from GitHib: {} to {:?} because of error: {e:?}",
                     project_config.github_repo_url, project_local_path
                 );
-                push_complete_status_to_frontend(&response_channel);
-                push_global_log_message_to_frontend(
+                ack_frontend_action(&response_channel);
+                push_log_to_frontend(
                     &app_handle,
                     &project_id,
                     format!(
@@ -155,8 +153,8 @@ pub fn clone_code(
             builder.branch(&project_config.github_branch);
             if let Err(e) = builder.clone(&project_config.github_repo_url, &project_local_path) {
                 error!("Fail to clone GitHub repository: {e:?}");
-                push_complete_status_to_frontend(&response_channel);
-                push_global_log_message_to_frontend(
+                ack_frontend_action(&response_channel);
+                push_log_to_frontend(
                     &app_handle,
                     &project_id,
                     format!(
@@ -167,8 +165,8 @@ pub fn clone_code(
                 );
             };
         }
-        push_complete_status_to_frontend(&response_channel);
-        push_global_log_message_to_frontend(
+        ack_frontend_action(&response_channel);
+        push_log_to_frontend(
             &app_handle,
             &project_id,
             format!(

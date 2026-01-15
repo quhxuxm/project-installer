@@ -1,8 +1,5 @@
 use crate::command::message::LogLevel;
-use crate::common::{
-    parse_log_level_for_frontend, push_complete_status_to_frontend,
-    push_global_log_message_to_frontend, ProjectId,
-};
+use crate::common::{ack_frontend_action, parse_log_level, push_log_to_frontend, ProjectId};
 use crate::config::{ProjectConfig, TOOL_CONFIG};
 use crate::error::Error;
 use tauri::ipc::Channel;
@@ -28,11 +25,15 @@ fn execute_program(
                 .join(&project_config.github_branch),
         )
         .spawn()?;
-    info!(
-        "Child process for [{command}] spawned, process id: {}",
-        child.pid()
+    push_log_to_frontend(
+        &app_handle,
+        &project_id,
+        format!(
+            "Child process for [{command}] spawned, process id: {}",
+            child.pid()
+        ),
+        LogLevel::Info,
     );
-
     let project_id = project_id.clone();
     let app_handle = app_handle.clone();
     tauri::async_runtime::spawn(async move {
@@ -47,12 +48,7 @@ fn execute_program(
                         }
                     };
 
-                    push_global_log_message_to_frontend(
-                        &app_handle,
-                        &project_id,
-                        line.clone(),
-                        LogLevel::Error,
-                    );
+                    push_log_to_frontend(&app_handle, &project_id, line.clone(), LogLevel::Error);
                 }
                 CommandEvent::Stdout(std_out) => {
                     let line = match String::from_utf8(std_out) {
@@ -62,30 +58,20 @@ fn execute_program(
                             continue;
                         }
                     };
-                    let level = parse_log_level_for_frontend(&line);
-                    push_global_log_message_to_frontend(
-                        &app_handle,
-                        &project_id,
-                        line.clone(),
-                        level,
-                    );
+                    let level = parse_log_level(&line);
+                    push_log_to_frontend(&app_handle, &project_id, line.clone(), level);
                     info!("[CHILD OUTPUT] {}", line);
                 }
                 CommandEvent::Error(error) => {
-                    push_global_log_message_to_frontend(
-                        &app_handle,
-                        &project_id,
-                        error,
-                        LogLevel::Error,
-                    );
+                    push_log_to_frontend(&app_handle, &project_id, error, LogLevel::Error);
                 }
                 CommandEvent::Terminated(terminate) => {
-                    push_complete_status_to_frontend(&response_channel);
+                    ack_frontend_action(&response_channel);
                     let mut level = LogLevel::Error;
                     if let Some(0) = terminate.code {
                         level = LogLevel::Info
                     }
-                    push_global_log_message_to_frontend(
+                    push_log_to_frontend(
                         &app_handle,
                         &project_id,
                         format!(

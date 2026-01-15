@@ -41,7 +41,7 @@ impl From<&str> for ProjectId {
     }
 }
 
-pub fn parse_log_level_for_frontend(line: &str) -> LogLevel {
+pub fn parse_log_level(line: &str) -> LogLevel {
     if line.to_uppercase().contains("[ERROR]") {
         LogLevel::Error
     } else {
@@ -57,7 +57,7 @@ pub fn parse_log_level_for_frontend(line: &str) -> LogLevel {
     }
 }
 
-pub fn push_global_log_message_to_frontend(
+pub fn push_log_to_frontend(
     app_handle: &AppHandle,
     project_id: &ProjectId,
     message: String,
@@ -75,8 +75,8 @@ pub fn push_global_log_message_to_frontend(
     };
 }
 
-pub fn push_complete_status_to_frontend(response_channel: &Channel<bool>) {
+pub fn ack_frontend_action(response_channel: &Channel<bool>) {
     if let Err(e) = response_channel.send(true) {
-        error!("Fail to send complete status to frontend channel: {e:?}");
+        error!("Fail ack to frontend action: {e:?}");
     };
 }
