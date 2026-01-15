@@ -1,12 +1,14 @@
-use crate::command::message::LogEvent;
-use crate::common::BackendEvent::LogMessage;
-use crate::common::{parse_log_level_for_frontend, ProjectId};
+use crate::command::message::LogLevel;
+use crate::common::{
+    parse_log_level_for_frontend, push_complete_status_to_frontend,
+    push_global_log_message_to_frontend, ProjectId,
+};
 use crate::config::{ProjectConfig, TOOL_CONFIG};
 use crate::error::Error;
-use std::io::{BufRead, BufReader};
-use std::process::Stdio;
-use std::thread;
-use tauri::{AppHandle, Emitter};
+use tauri::ipc::Channel;
+use tauri::AppHandle;
+use tauri_plugin_shell::process::CommandEvent;
+use tauri_plugin_shell::ShellExt;
 use tracing::{error, info};
 
 fn execute_program(
@@ -14,45 +16,96 @@ fn execute_program(
     project_id: &ProjectId,
     command: &str,
     project_config: &ProjectConfig,
+    response_channel: Channel<bool>,
 ) -> Result<(), Error> {
-    let mut child = execute::command("cmd")
+    let shell = app_handle.shell();
+    let (mut receiver, child) = shell
+        .command("cmd")
         .args(["/C", command])
-        .stdout(Stdio::piped())
         .current_dir(
             project_config
                 .local_repo_path
                 .join(&project_config.github_branch),
         )
         .spawn()?;
-    info!("Child process for [{command}] spawned");
-    if let Some(stdout) = child.stdout.take() {
-        let project_id = project_id.clone();
-        let app_handle = app_handle.clone();
-        thread::spawn(move || {
-            let reader = BufReader::new(stdout);
-            for line in reader.lines() {
-                if let Ok(line) = line {
-                    let level = parse_log_level_for_frontend(&line);
-                    if let Err(e) = app_handle.emit(
-                        &LogMessage.to_string(),
-                        LogEvent {
-                            project_id: project_id.clone(),
-                            message: line.clone(),
-                            level,
-                        },
-                    ) {
-                        error!("Fail to emit backend event to frontend: {e:?}")
+    info!(
+        "Child process for [{command}] spawned, process id: {}",
+        child.pid()
+    );
+
+    let project_id = project_id.clone();
+    let app_handle = app_handle.clone();
+    tauri::async_runtime::spawn(async move {
+        while let Some(command_event) = receiver.recv().await {
+            match command_event {
+                CommandEvent::Stderr(std_error) => {
+                    let line = match String::from_utf8(std_error) {
+                        Ok(line) => line,
+                        Err(e) => {
+                            error!("Fail to parse utf8 line: {e:?}");
+                            continue;
+                        }
                     };
+
+                    push_global_log_message_to_frontend(
+                        &app_handle,
+                        &project_id,
+                        line.clone(),
+                        LogLevel::Error,
+                    );
+                }
+                CommandEvent::Stdout(std_out) => {
+                    let line = match String::from_utf8(std_out) {
+                        Ok(line) => line,
+                        Err(e) => {
+                            error!("Fail to parse utf8 line: {e:?}");
+                            continue;
+                        }
+                    };
+                    let level = parse_log_level_for_frontend(&line);
+                    push_global_log_message_to_frontend(
+                        &app_handle,
+                        &project_id,
+                        line.clone(),
+                        level,
+                    );
                     info!("[CHILD OUTPUT] {}", line);
                 }
+                CommandEvent::Error(error) => {
+                    push_global_log_message_to_frontend(
+                        &app_handle,
+                        &project_id,
+                        error,
+                        LogLevel::Error,
+                    );
+                }
+                CommandEvent::Terminated(terminate) => {
+                    push_complete_status_to_frontend(&response_channel);
+                    push_global_log_message_to_frontend(
+                        &app_handle,
+                        &project_id,
+                        format!(
+                            "Terminated by signal: {:?}, code: {:?}",
+                            terminate.signal, terminate.code
+                        ),
+                        LogLevel::Error,
+                    );
+                }
+                _ => {
+                    continue;
+                }
             }
-        });
-    }
-    let exit_status = child.wait()?;
-    info!("Child process for [{command}] exited with status: {exit_status}");
+        }
+    });
+
     Ok(())
 }
-pub fn execute_build_process(app_handle: &AppHandle, project_id: &ProjectId) -> Result<(), Error> {
+
+pub fn execute_build_process(
+    app_handle: &AppHandle,
+    project_id: &ProjectId,
+    response_channel: Channel<bool>,
+) -> Result<(), Error> {
     let tool_config = TOOL_CONFIG.read().map_err(|_| Error::LockFail)?;
     let projects_config = &tool_config.projects;
     let project_config = projects_config
@@ -62,6 +115,12 @@ pub fn execute_build_process(app_handle: &AppHandle, project_id: &ProjectId) -> 
         .customized_build_command
         .as_deref()
         .ok_or(Error::BuildCommandNotFound(project_id.clone()))?;
-    execute_program(app_handle, project_id, build_command, &project_config)?;
+    execute_program(
+        app_handle,
+        project_id,
+        build_command,
+        &project_config,
+        response_channel,
+    )?;
     Ok(())
 }

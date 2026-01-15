@@ -14,11 +14,13 @@ use command::{
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() {
+#[tokio::main(flavor = "multi_thread", worker_threads = 4)]
+pub async fn run() {
     tracing_subscriber::fmt().init();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             get_github_runtime_detail,
             get_project_runtime_detail,

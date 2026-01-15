@@ -1,8 +1,11 @@
-use crate::command::message::LogLevel;
+use crate::command::message::{LogEvent, LogLevel};
 use derive_more::Display;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use std::ops::Deref;
+use tauri::ipc::Channel;
+use tauri::{AppHandle, Emitter};
+use tracing::error;
 
 pub static RGS_PMT_DIR: &str = ".rgspmt";
 #[derive(Debug, Copy, Clone, Display)]
@@ -52,4 +55,28 @@ pub fn parse_log_level_for_frontend(line: &str) -> LogLevel {
             }
         }
     }
+}
+
+pub fn push_global_log_message_to_frontend(
+    app_handle: &AppHandle,
+    project_id: &ProjectId,
+    message: String,
+    level: LogLevel,
+) {
+    if let Err(e) = app_handle.emit(
+        &BackendEvent::LogMessage.to_string(),
+        LogEvent {
+            project_id: project_id.clone(),
+            message,
+            level,
+        },
+    ) {
+        error!("Fail to emit backend event to frontend: {e:?}")
+    };
+}
+
+pub fn push_complete_status_to_frontend(response_channel: &Channel<bool>) {
+    if let Err(e) = response_channel.send(true) {
+        error!("Fail to send complete status to frontend channel: {e:?}");
+    };
 }

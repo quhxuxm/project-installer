@@ -98,7 +98,7 @@ pub fn load_project_runtime_detail(project_id: &ProjectId) -> Result<ProjectRunt
         .projects
         .get(project_id)
         .ok_or(Error::ProjectNotFound(project_id.clone()))?;
-    let available_github_branches = repo::get_project_github_branches(project_id)?;
+    let available_github_branches = repo::get_branches(project_id)?;
     let mut customized_properties = project_config
         .customized_properties
         .iter()

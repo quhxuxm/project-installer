@@ -1,8 +1,6 @@
 pub mod message;
 
 use crate::command::message::ProjectRuntimeUpdate;
-use tauri::AppHandle;
-
 use crate::config::{save_tool_config, TOOL_CONFIG};
 use crate::error::Error;
 use crate::runtime::{
@@ -10,6 +8,8 @@ use crate::runtime::{
     GitHubRuntimeDetail, ProjectRuntimeDetail, ProjectRuntimeSummary,
 };
 use crate::{process, repo};
+use tauri::ipc::Channel;
+use tauri::AppHandle;
 use tracing::info;
 
 #[tauri::command]
@@ -54,20 +54,22 @@ pub async fn save_project(project_runtime_update: ProjectRuntimeUpdate) -> Resul
 pub async fn get_project_code(
     app_handle: AppHandle,
     project_runtime_update: ProjectRuntimeUpdate,
+    response_channel: Channel<bool>,
 ) -> Result<(), Error> {
     info!("Receive project runtime update: {project_runtime_update:#?}");
     let project_id = project_runtime_update.project_id.clone();
     save_project(project_runtime_update).await?;
-    repo::get_project_github_code(&app_handle, &project_id.into())
+    repo::clone_code(&app_handle, &project_id.into(), response_channel)
 }
 
 #[tauri::command]
 pub async fn exec_build_process(
     app_handle: AppHandle,
     project_runtime_update: ProjectRuntimeUpdate,
+    response_channel: Channel<bool>,
 ) -> Result<(), Error> {
     info!("Receive project runtime update: {project_runtime_update:#?}");
     let project_id = project_runtime_update.project_id.clone();
     save_project(project_runtime_update).await?;
-    process::execute_build_process(&app_handle, &project_id.into())
+    process::execute_build_process(&app_handle, &project_id.into(), response_channel)
 }

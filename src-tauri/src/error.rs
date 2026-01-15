@@ -22,6 +22,8 @@ pub enum Error {
     BuildCommandNotFound(ProjectId),
     #[error("Program part not found: {0}")]
     ProgramPartNotFound(ProjectId),
+    #[error("Tauri shell plugin has error: {0}")]
+    TauriShellPluginError(#[from] tauri_plugin_shell::Error),
 }
 
 impl From<Error> for InvokeError {
