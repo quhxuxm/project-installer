@@ -21,7 +21,7 @@ use tokio::runtime::{Builder, Runtime};
 pub fn run() {
     let parallelism = std::thread::available_parallelism().expect("Fail to get system parallelism");
     let runtime = Builder::new_multi_thread()
-        .worker_threads(parallelism)
+        .worker_threads(parallelism.get())
         .enable_all()
         .build()
         .expect("Fail to create async runtime");
