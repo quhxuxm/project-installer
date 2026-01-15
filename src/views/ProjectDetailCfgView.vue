@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import { useRoute } from "vue-router";
-import { ref, watch } from "vue";
-import { Button, Column, DataTable, DataTableCellEditCompleteEvent, InputText, Select, SplitButton } from "primevue";
+import {useRoute} from "vue-router";
+import {ref, watch} from "vue";
+import {Button, Column, DataTable, DataTableCellEditCompleteEvent, InputText, Select, SplitButton} from "primevue";
 import Fieldset from "primevue/fieldset";
-import { EXEC_BUILD_PROCESS, GET_PROJECT_CODE_CMD, GET_PROJECT_RUNTIME_DETAIL_CMD, SAVE_PROJECT_CMD } from "../common.ts";
-import { Channel, invoke } from "@tauri-apps/api/core";
-import { ProjectRuntimeDetail, ProjectRuntimeUpdate } from "../messages/project.ts";
+import {EXEC_BUILD_PROCESS, GET_PROJECT_CODE_CMD, GET_PROJECT_RUNTIME_DETAIL_CMD, SAVE_PROJECT_CMD} from "../common.ts";
+import {Channel, invoke} from "@tauri-apps/api/core";
+import {ProjectRuntimeDetail, ProjectRuntimeUpdate} from "../messages/project.ts";
 
 let currentRoute = useRoute();
 
@@ -36,7 +36,7 @@ let debugCommandVal = ref();
 
 function switchProjectDetail(projectId: string) {
     loading.value = true;
-    invoke<ProjectRuntimeDetail>(GET_PROJECT_RUNTIME_DETAIL_CMD, { projectId }).then((backendData) => {
+    invoke<ProjectRuntimeDetail>(GET_PROJECT_RUNTIME_DETAIL_CMD, {projectId}).then((backendData) => {
         projectRuntimeDetail.value = backendData;
         buildCommandVal.value = backendData.customizedBuildCommand ?? backendData.buildCommand;
         runCommandVal.value = backendData.customizedRunCommand ?? backendData.runCommand;
@@ -120,7 +120,7 @@ function execBuildProcess() {
 }
 
 function onCPEditComplete(event: DataTableCellEditCompleteEvent) {
-    let { data, newValue, field } = event;
+    let {data, newValue, field} = event;
     data[field] = newValue;
     console.log("Row data: " + data);
 }
@@ -170,7 +170,7 @@ const actionCommands = [
     <div v-if="loading" class="h-full flex flex-col justify-center align-center w-full">
         <h1 class="text-2xl text-primary text-center">Loading ...</h1>
     </div>
-    <div v-else class="h-full">
+    <div v-else class="h-full w-full flex flex-col gap-4 justify-self-center">
         <h1 class="text-2xl text-primary mb-4">
             {{ projectRuntimeDetail.name }}
         </h1>
@@ -179,23 +179,33 @@ const actionCommands = [
                 <div class="flex flex-col gap-4">
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="githubBranch">Branch</label>
-                        <Select id="githubBranch" v-model="projectRuntimeDetail.githubBranch" :options="projectRuntimeDetail.availableGithubBranches"></Select>
-                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter the GitHub branch. </Message>
+                        <Select id="githubBranch" v-model="projectRuntimeDetail.githubBranch"
+                                :options="projectRuntimeDetail.availableGithubBranches"></Select>
+                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
+                            the GitHub branch.
+                        </Message>
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="githubRepositoryUrl">Repository url</label>
-                        <InputText id="githubRepositoryUrl" v-model="projectRuntimeDetail.githubRepoUrl" readonly />
-                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter the GitHub repository url. </Message>
+                        <InputText id="githubRepositoryUrl" v-model="projectRuntimeDetail.githubRepoUrl" readonly/>
+                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
+                            the GitHub repository url.
+                        </Message>
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="localRepoPath">Local repository path</label>
-                        <InputText id="localRepoPath" v-model="projectRuntimeDetail.localRepoPath" />
-                        <Message class="text-gray-500 text-sm flex flex-col gap-2" severity="secondary" size="small" variant="simple">
+                        <InputText id="localRepoPath" v-model="projectRuntimeDetail.localRepoPath"/>
+                        <Message class="text-gray-500 text-sm flex flex-col gap-2" severity="secondary" size="small"
+                                 variant="simple">
                             <span>Enter the local repository path.</span>
                             <span>The concrete local path will be:</span>
-                            <span class="text-primary"> {{ projectRuntimeDetail.localRepoPath }}/{{ projectRuntimeDetail.githubBranch }} </span>
+                            <span class="text-primary"> {{
+                                    projectRuntimeDetail.localRepoPath
+                                }}\{{ projectRuntimeDetail.githubBranch }} </span>
                             <span>The customized properties directory path will be:</span>
-                            <span class="text-primary"> {{ projectRuntimeDetail.localRepoPath }}/{{ projectRuntimeDetail.githubBranch }}-configuration </span>
+                            <span class="text-primary"> {{
+                                    projectRuntimeDetail.localRepoPath
+                                }}\{{ projectRuntimeDetail.githubBranch }}-configuration </span>
                         </Message>
                     </div>
                 </div>
@@ -204,18 +214,24 @@ const actionCommands = [
                 <div class="flex flex-col gap-4">
                     <div class="flex flex-col gap-2 mb-4">
                         <label class="text-lg" for="buildCommand">Build command</label>
-                        <InputText id="buildCommand" v-model="buildCommandVal" />
-                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter the build command. </Message>
+                        <InputText id="buildCommand" v-model="buildCommandVal"/>
+                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
+                            the build command.
+                        </Message>
                     </div>
                     <div class="flex flex-col gap-2 mb-4">
                         <label class="text-lg" for="runCommand">Run command</label>
-                        <InputText id="runCommand" v-model="runCommandVal" />
-                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter the run command. </Message>
+                        <InputText id="runCommand" v-model="runCommandVal"/>
+                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
+                            the run command.
+                        </Message>
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="debugCommand">Debug command</label>
-                        <InputText id="debugCommand" v-model="debugCommandVal" />
-                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter the debug command. </Message>
+                        <InputText id="debugCommand" v-model="debugCommandVal"/>
+                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
+                            the debug command.
+                        </Message>
                     </div>
                 </div>
             </Fieldset>
@@ -231,24 +247,30 @@ const actionCommands = [
                             scrollable
                             @cell-edit-complete="onCPEditComplete"
                         >
-                            <Column body-class="text-xs w-5/11" field="key" header="Key" header-class="text-sm text-primary">
+                            <Column body-class="text-xs w-5/11" field="key" header="Key"
+                                    header-class="text-sm text-primary">
                                 <template #editor="{ data, field }">
-                                    <InputText v-model="data[field]" autofocus class="text-xs! w-fit h-fit" fluid style="padding: 0; margin: 0; border: 0" />
+                                    <InputText v-model="data[field]" autofocus class="text-xs! w-fit h-fit" fluid
+                                               style="padding: 0; margin: 0; border: 0"/>
                                 </template>
                             </Column>
-                            <Column body-class="text-xs w-5/11" field="value" header="Value" header-class="text-sm text-primary">
+                            <Column body-class="text-xs w-5/11" field="value" header="Value"
+                                    header-class="text-sm text-primary">
                                 <template #editor="{ data, field }">
-                                    <InputText v-model="data[field]" autofocus class="text-xs! w-fit h-fit" fluid style="padding: 0; margin: 0; border: 0" />
+                                    <InputText v-model="data[field]" autofocus class="text-xs! w-fit h-fit" fluid
+                                               style="padding: 0; margin: 0; border: 0"/>
                                 </template>
                             </Column>
                             <Column body-class="text-xs w-1/11" field="value" header-class="text-sm text-primary">
                                 <template #body="{ data }">
-                                    <Button icon="pi pi-times" rounded severity="danger" size="small" variant="text" @click="deleteCPProperty(data['key'])" />
+                                    <Button icon="pi pi-times" rounded severity="danger" size="small" variant="text"
+                                            @click="deleteCPProperty(data['key'])"/>
                                 </template>
                             </Column>
                         </DataTable>
                         <div class="flex flex-row justify-center">
-                            <Button icon="pi pi-plus" rounded severity="primary" size="small" @click="addCPProperty"></Button>
+                            <Button icon="pi pi-plus" rounded severity="primary" size="small"
+                                    @click="addCPProperty"></Button>
                         </div>
                     </div>
                 </div>

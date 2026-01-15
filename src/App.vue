@@ -14,7 +14,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="h-screen w-screen p-2 flex flex-col">
+    <div class="h-screen w-screen p-3 flex flex-col">
         <div class="flex flex-row justify-start h-1/12">
             <span class="inline-flex items-center gap-1 px-2 py-2 grow">
                 <span class="text-2xl font-black"> RGS<span
@@ -24,13 +24,13 @@ onMounted(async () => {
         <Splitter class="grow h-11/12" layout="vertical">
             <SplitterPanel :size="80" class="w-full" style="user-select: none">
                 <Splitter class="w-full h-full">
-                    <SplitterPanel :size="20" class="flex flex-col justify-start p-4">
-                        <ul class="overflow-y-auto">
-                            <li>
-                            <span
-                                class="inline-flex items-center gap-1 px-2 py-2 uppercase text-lg font-black">General</span>
+                    <SplitterPanel :size="20" class="flex flex-col justify-start pt-4 pl-4">
+                        <ul class="overflow-y-auto h-full w-full">
+                            <li style="text-wrap: nowrap">
+                                <span
+                                    class="inline-flex items-center gap-1 px-2 py-2 uppercase text-lg font-black">General</span>
                             </li>
-                            <li>
+                            <li style="text-wrap: nowrap">
                                 <router-link v-slot="{ href, navigate }" custom to="/github">
                                     <a :href="href" class="flex items-center px-4 py-2 cursor-pointer group"
                                        @click="navigate">
@@ -39,11 +39,11 @@ onMounted(async () => {
                                     </a>
                                 </router-link>
                             </li>
-                            <li>
-                            <span
-                                class="inline-flex items-center gap-1 px-2 py-2 uppercase text-lg font-black">Projects</span>
+                            <li style="text-wrap: nowrap">
+                                <span
+                                    class="inline-flex items-center gap-1 px-2 py-2 uppercase text-lg font-black">Projects</span>
                             </li>
-                            <li v-for="project in projectRuntimeSummaries">
+                            <li v-for="project in projectRuntimeSummaries" style="text-wrap: nowrap">
                                 <router-link v-slot="{ href, navigate }" :to="'/project/'+project.projectId" custom>
                                     <a :href="href" class="flex items-center px-4 py-2 cursor-pointer group"
                                        @click="navigate">
