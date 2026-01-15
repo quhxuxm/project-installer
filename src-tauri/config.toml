@@ -51,8 +51,8 @@ startup_dependencies = [
 [projects.gls.customized_properties]
 
 [projects.gsr]
-name = "Game Router Service"
-description = "The core game router service."
+name = "Game Service Router"
+description = "The core game service router."
 github_repo_url = "https://github.com/igt-playcasino/gsr.git"
 github_branch = "6.10.0-develop"
 local_repo_path = 'D:\Workspace\GitHub\playcasino\gsr'
