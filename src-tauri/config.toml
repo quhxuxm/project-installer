@@ -3,6 +3,26 @@ username = "quhxuxm"
 token = ""
 proxy = "http://127.0.0.1:10080"
 
+[projects.ruleengine]
+name = "Rule Engine Service"
+description = "The Rule Engine service."
+github_repo_url = "https://github.com/igt-playcasino/ruleengine.git"
+github_branch = "6.10.0-develop"
+local_repo_path = 'D:\Workspace\GitHub\playcasino\ruleengine'
+build_command = "mvn clean package -DskipTests"
+customized_build_command = 'mvn clean package -DskipTests -f ruleengine/pom.xml'
+run_command = "mvn clean package -DskipTests"
+customized_run_command = "mvn clean package -DskipTests"
+debug_command = "mvn clean package -DskipTests"
+customized_debug_command = "mvn clean package -DskipTests"
+stop_command = "mvn clean package -DskipTests"
+startup_dependencies = [
+    "rgs-dp1",
+    "rgs-dp2",
+]
+
+[projects.ruleengine.customized_properties]
+
 [projects.cpt]
 name = "Competition Service"
 description = "Competition Service is one of the promotion service to make competitions."
@@ -23,22 +43,22 @@ startup_dependencies = [
 
 [projects.cpt.customized_properties]
 "Com.igt.cpt.key4" = "Value4"
-"com.igt.cpt.key3" = "value3"
-"com.igt.cpt.key2" = "value2"
-1 = "1"
-2 = "2"
 3 = "4"
+2 = "2"
+"com.igt.cpt.key2" = "value2"
 4 = "4"
+1 = "1"
+"com.igt.cpt.key3" = "value3"
 
-[projects.gls]
-name = "GLE Service"
-description = "The GLE service."
-github_repo_url = "https://github.com/igt-playcasino/gls.git"
+[projects.gles]
+name = "GLE 4.0 Service"
+description = "The GLE 4.0 service."
+github_repo_url = "https://github.com/igt-playcasino/gles.git"
 github_branch = "6.10.0-develop"
-local_repo_path = 'D:\Workspace\GitHub\playcasino\gls'
+local_repo_path = 'D:\Workspace\GitHub\playcasino\gles'
 build_command = "mvn clean package -DskipTests"
-customized_build_command = 'mvn clean package -DskipTests -f gls\pom.xml'
-run_command = "mvn clean pacage -DskipTests"
+customized_build_command = 'mvn clean package -DskipTests -f gles\pom.xml'
+run_command = "mvn clean package -DskipTests"
 customized_run_command = "mvn clean package -DskipTests"
 debug_command = "mvn clean package -DskipTests"
 customized_debug_command = "mvn clean package -DskipTests"
@@ -48,7 +68,27 @@ startup_dependencies = [
     "rgs-dp2",
 ]
 
-[projects.gls.customized_properties]
+[projects.gles.customized_properties]
+
+[projects.cache]
+name = "Cache Service"
+description = "The cache service."
+github_repo_url = "https://github.com/igt-playcasino/cache.git"
+github_branch = "6.10.0-develop"
+local_repo_path = 'D:\Workspace\GitHub\playcasino\cache'
+build_command = "mvn clean package -DskipTests"
+customized_build_command = 'mvn clean package -DskipTests -f cache\pom.xml'
+run_command = "mvn clean package -DskipTests"
+customized_run_command = "mvn clean package -DskipTests"
+debug_command = "mvn clean package -DskipTests"
+customized_debug_command = "mvn clean package -DskipTests"
+stop_command = "mvn clean package -DskipTests"
+startup_dependencies = [
+    "rgs-dp1",
+    "rgs-dp2",
+]
+
+[projects.cache.customized_properties]
 
 [projects.gsr]
 name = "Game Service Router"
@@ -70,25 +110,25 @@ startup_dependencies = [
 
 [projects.gsr.customized_properties]
 
-[projects.pas]
-name = "PAS Service"
-description = "PAS Service is also named as player account service"
-github_repo_url = "https://github.com/igt-playcasino/pas.git"
-github_branch = "6.9.0-develop"
-local_repo_path = 'D:\Workspace\GitHub\playcasino\pas'
+[projects.gls]
+name = "GLE Service"
+description = "The GLE service."
+github_repo_url = "https://github.com/igt-playcasino/gls.git"
+github_branch = "6.10.0-develop"
+local_repo_path = 'D:\Workspace\GitHub\playcasino\gls'
 build_command = "mvn clean package -DskipTests"
-customized_build_command = "mvn clean package -DskipTests"
-run_command = "mvn clean package -DskipTests"
+customized_build_command = 'mvn clean package -DskipTests -f gls\pom.xml'
+run_command = "mvn clean pacage -DskipTests"
 customized_run_command = "mvn clean package -DskipTests"
 debug_command = "mvn clean package -DskipTests"
 customized_debug_command = "mvn clean package -DskipTests"
 stop_command = "mvn clean package -DskipTests"
 startup_dependencies = [
-    "pas-dp1",
-    "pas-dp2",
+    "rgs-dp1",
+    "rgs-dp2",
 ]
 
-[projects.pas.customized_properties]
+[projects.gls.customized_properties]
 
 [projects.rgs]
 name = "RGS Platform"
@@ -110,25 +150,25 @@ startup_dependencies = [
 
 [projects.rgs.customized_properties]
 
-[projects.cache]
-name = "Cache Service"
-description = "The cache service."
-github_repo_url = "https://github.com/igt-playcasino/cache.git"
+[projects.pas]
+name = "PAS Service"
+description = "PAS Service is also named as player account service"
+github_repo_url = "https://github.com/igt-playcasino/pas.git"
 github_branch = "6.9.0-develop"
-local_repo_path = 'D:\Workspace\GitHub\playcasino\cache'
+local_repo_path = 'D:\Workspace\GitHub\playcasino\pas'
 build_command = "mvn clean package -DskipTests"
-customized_build_command = 'mvn clean package -DskipTests -f cache\pom.xml'
+customized_build_command = "mvn clean package -DskipTests"
 run_command = "mvn clean package -DskipTests"
 customized_run_command = "mvn clean package -DskipTests"
 debug_command = "mvn clean package -DskipTests"
 customized_debug_command = "mvn clean package -DskipTests"
 stop_command = "mvn clean package -DskipTests"
 startup_dependencies = [
-    "rgs-dp1",
-    "rgs-dp2",
+    "pas-dp1",
+    "pas-dp2",
 ]
 
-[projects.cache.customized_properties]
+[projects.pas.customized_properties]
 
 [projects.nss]
 name = "NSS Service"
@@ -149,23 +189,3 @@ startup_dependencies = [
 ]
 
 [projects.nss.customized_properties]
-
-[projects.gles]
-name = "GLE 4.0 Service"
-description = "The GLE 4.0 service."
-github_repo_url = "https://github.com/igt-playcasino/gles.git"
-github_branch = "6.10.0-develop"
-local_repo_path = 'D:\Workspace\GitHub\playcasino\gles'
-build_command = "mvn clean package -DskipTests"
-customized_build_command = "mvn clean package -DskipTests"
-run_command = "mvn clean package -DskipTests"
-customized_run_command = "mvn clean package -DskipTests"
-debug_command = "mvn clean package -DskipTests"
-customized_debug_command = "mvn clean package -DskipTests"
-stop_command = "mvn clean package -DskipTests"
-startup_dependencies = [
-    "rgs-dp1",
-    "rgs-dp2",
-]
-
-[projects.gles.customized_properties]
