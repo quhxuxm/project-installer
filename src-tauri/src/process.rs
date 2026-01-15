@@ -81,6 +81,10 @@ fn execute_program(
                 }
                 CommandEvent::Terminated(terminate) => {
                     push_complete_status_to_frontend(&response_channel);
+                    let mut level = LogLevel::Error;
+                    if let Some(0) = terminate.code {
+                        level = LogLevel::Info
+                    }
                     push_global_log_message_to_frontend(
                         &app_handle,
                         &project_id,
@@ -88,7 +92,7 @@ fn execute_program(
                             "Terminated by signal: {:?}, code: {:?}",
                             terminate.signal, terminate.code
                         ),
-                        LogLevel::Error,
+                        level,
                     );
                 }
                 _ => {
