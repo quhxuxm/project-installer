@@ -6,14 +6,12 @@ pub mod process;
 pub mod repo;
 pub mod runtime;
 
-use std::alloc::System;
-
 use command::{
     exec_build_process, get_github_runtime_detail, get_project_code, get_project_runtime_detail,
     get_project_runtime_summaries, save_project,
 };
 use tauri::async_runtime;
-use tokio::runtime::{Builder, Runtime};
+use tokio::runtime::Builder;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
@@ -26,7 +24,7 @@ pub fn run() {
         .build()
         .expect("Fail to create async runtime");
     tracing_subscriber::fmt().init();
-    async_runtime::set(runtime);
+    async_runtime::set(runtime.handle().clone());
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
