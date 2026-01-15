@@ -9,7 +9,7 @@ let logEvents = ref<LogEvent[]>([]);
 
 listen(BACKEND_EVENT_LOG_MESSAGE, (event: Event<LogEvent>) => {
     logEvents.value.push(event.payload);
-    while (logEvents.value.length > 100) {
+    while (logEvents.value.length > 10000) {
         logEvents.value.shift();
     }
 })
@@ -22,7 +22,8 @@ listen(BACKEND_EVENT_LOG_MESSAGE, (event: Event<LogEvent>) => {
 
 <template>
     <div class="w-full h-full flex flex-col">
-        <DataTable :value="logEvents" class="h-full grow" column-resize-mode="fit" resizableColumns scrollHeight="100%"
+        <DataTable :value="logEvents" class="h-full grow" column-resize-mode="fit" resizableColumns
+                   scrollHeight="100%"
                    scrollable
                    showGridlines
                    stripedRows table-style="min-width: 50rem">
@@ -49,7 +50,6 @@ listen(BACKEND_EVENT_LOG_MESSAGE, (event: Event<LogEvent>) => {
                     {{ slot.data.message }}
                   </span>
                 </template>
-                >
             </Column>
         </DataTable>
     </div>
