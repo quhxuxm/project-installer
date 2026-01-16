@@ -2,6 +2,7 @@ export enum GlobalNotificationLevel {
     INFO = 'info',
     WARN = 'warn',
     ERROR = 'error',
+    Success = 'success',
 }
 
 
