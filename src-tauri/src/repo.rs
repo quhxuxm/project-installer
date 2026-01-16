@@ -1,5 +1,5 @@
 use crate::command::message::LogLevel;
-use crate::common::{ack_frontend_action, push_log_to_frontend, RGS_PMT_DIR};
+use crate::common::{ack_frontend_action, push_log_to_frontend, GIT_DIR, RGS_PMT_DIR};
 use crate::{common::ProjectId, config::TOOL_CONFIG, error::Error};
 use git2::{build::RepoBuilder, Cred, FetchOptions, ProxyOptions, RemoteCallbacks, Repository};
 use tauri::ipc::Channel;
@@ -196,7 +196,12 @@ pub fn get_branches(project_id: &ProjectId) -> Result<Vec<String>, Error> {
         proxy_options.url(url);
         proxy_options
     });
-    let temp_repo = Repository::init_bare(project_config.local_repo_path.join(RGS_PMT_DIR))?;
+    let temp_repo = Repository::init_bare(
+        project_config
+            .local_repo_path
+            .join(RGS_PMT_DIR)
+            .join(GIT_DIR),
+    )?;
     let mut remote = temp_repo.remote_anonymous(&project_config.github_repo_url)?;
     remote.connect_auth(git2::Direction::Fetch, Some(callbacks), proxy_options)?;
     let remote_refs = remote.list()?;

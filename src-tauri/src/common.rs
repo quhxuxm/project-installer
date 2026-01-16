@@ -8,6 +8,7 @@ use tauri::{AppHandle, Emitter};
 use tracing::error;
 
 pub static RGS_PMT_DIR: &str = ".rgspmt";
+pub static GIT_DIR: &str = ".git";
 #[derive(Debug, Copy, Clone, Display)]
 pub enum BackendEvent {
     #[display("__backend_event_log_message__")]
