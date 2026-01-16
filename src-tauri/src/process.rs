@@ -1,10 +1,14 @@
+use std::fs::OpenOptions;
 use crate::command::message::{GlobalLogLevel, GlobalNotificationLevel};
 use crate::common::{
-    ack_frontend_action, parse_global_log_level, push_global_log_to_frontend,
-    push_global_notification_to_frontend, ProjectId,
+    ack_frontend_action, generate_customized_properties_dir, parse_global_log_level,
+    push_global_log_to_frontend, push_global_notification_to_frontend, ProjectId,
 };
 use crate::config::{ProjectConfig, TOOL_CONFIG};
 use crate::error::Error;
+
+use java_properties::write;
+use std::io::BufWriter;
 use tauri::ipc::Channel;
 use tauri::AppHandle;
 use tauri_plugin_shell::process::CommandEvent;
@@ -138,6 +142,40 @@ pub fn execute_build_process(
         app_handle,
         project_id,
         build_command,
+        &project_config,
+        response_channel,
+    )?;
+    Ok(())
+}
+
+pub fn execute_run_process(
+    app_handle: &AppHandle,
+    project_id: &ProjectId,
+    response_channel: Channel<bool>,
+) -> Result<(), Error> {
+    let tool_config = TOOL_CONFIG.read().map_err(|_| Error::LockFail)?;
+    let projects_config = &tool_config.projects;
+    let project_config = projects_config
+        .get(project_id)
+        .ok_or(Error::ProjectNotFound(project_id.clone()))?;
+    let customized_cfg_dir = generate_customized_properties_dir(project_config);
+    if !customized_cfg_dir.exists(){
+        std::fs::create_dir_all(&customized_cfg_dir)?;
+    }
+    let customized_properties_file = customized_cfg_dir.join(format!("{project_id}.properties"));
+    let customized_properties_file = std::fs::File::create(customized_properties_file)?;
+    write(
+        BufWriter::new(customized_properties_file),
+        &project_config.customized_properties,
+    )?;
+    let run_command = project_config
+        .customized_run_command
+        .as_deref()
+        .ok_or(Error::RunCommandNotFound(project_id.clone()))?;
+    execute_program(
+        app_handle,
+        project_id,
+        run_command,
         &project_config,
         response_channel,
     )?;

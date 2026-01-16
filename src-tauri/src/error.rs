@@ -1,4 +1,5 @@
 use config::ConfigError;
+use java_properties::PropertiesError;
 use tauri::ipc::InvokeError;
 use thiserror::Error;
 
@@ -14,15 +15,19 @@ pub enum Error {
     ProjectNotFound(ProjectId),
     #[error("Lock fail")]
     LockFail,
-    #[error("Serialize toml fail: {0}")]
+    #[error(transparent)]
     SerializeTomlFail(#[from] toml::ser::Error),
-    #[error("IO error: {0}")]
+    #[error(transparent)]
     IoError(#[from] std::io::Error),
     #[error("Build command not found")]
     BuildCommandNotFound(ProjectId),
+    #[error("Run command not found")]
+    RunCommandNotFound(ProjectId),
     #[error("Program part not found: {0}")]
     ProgramPartNotFound(ProjectId),
-    #[error("Tauri shell plugin has error: {0}")]
+    #[error(transparent)]
+    PropertiesError(#[from] PropertiesError),
+    #[error(transparent)]
     TauriShellPluginError(#[from] tauri_plugin_shell::Error),
 }
 

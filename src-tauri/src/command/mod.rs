@@ -73,3 +73,15 @@ pub async fn exec_build_process(
     save_project(project_runtime_update).await?;
     process::execute_build_process(&app_handle, &project_id.into(), response_channel)
 }
+
+#[tauri::command]
+pub async fn exec_run_process(
+    app_handle: AppHandle,
+    project_runtime_update: ProjectRuntimeUpdate,
+    response_channel: Channel<bool>,
+) -> Result<(), Error> {
+    info!("Receive project runtime update: {project_runtime_update:#?}");
+    let project_id = project_runtime_update.project_id.clone();
+    save_project(project_runtime_update).await?;
+    process::execute_run_process(&app_handle, &project_id.into(), response_channel)
+}

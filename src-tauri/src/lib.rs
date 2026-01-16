@@ -7,8 +7,8 @@ pub mod repo;
 pub mod runtime;
 
 use command::{
-    exec_build_process, get_github_runtime_detail, get_project_code, get_project_runtime_detail,
-    get_project_runtime_summaries, save_project,
+    exec_build_process, exec_run_process, get_github_runtime_detail, get_project_code,
+    get_project_runtime_detail, get_project_runtime_summaries, save_project,
 };
 use tauri::async_runtime;
 use tokio::runtime::Builder;
@@ -34,7 +34,8 @@ pub fn run() {
             get_project_runtime_summaries,
             get_project_code,
             save_project,
-            exec_build_process
+            exec_build_process,
+            exec_run_process
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

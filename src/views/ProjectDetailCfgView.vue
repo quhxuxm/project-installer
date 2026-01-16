@@ -3,7 +3,13 @@ import {useRoute} from "vue-router";
 import {ref, watch} from "vue";
 import {Button, Column, DataTable, DataTableCellEditCompleteEvent, InputText, Select, SplitButton} from "primevue";
 import Fieldset from "primevue/fieldset";
-import {EXEC_BUILD_PROCESS, GET_PROJECT_CODE_CMD, GET_PROJECT_RUNTIME_DETAIL_CMD, SAVE_PROJECT_CMD} from "../common.ts";
+import {
+    EXEC_BUILD_PROCESS,
+    EXEC_RUN_PROCESS,
+    GET_PROJECT_CODE_CMD,
+    GET_PROJECT_RUNTIME_DETAIL_CMD,
+    SAVE_PROJECT_CMD
+} from "../common.ts";
 import {Channel, invoke} from "@tauri-apps/api/core";
 import {ProjectRuntimeDetail, ProjectRuntimeUpdate} from "../messages/project.ts";
 
@@ -119,6 +125,22 @@ function execBuildProcess() {
     });
 }
 
+function execRunProcess() {
+    let responseChannel = new Channel<boolean>();
+    responseChannel.onmessage = (_) => {
+        actionButtonDisable.value = false;
+    };
+    actionButtonDisable.value = true;
+    let projectRuntimeUpdate = generateProjectUpdate();
+    invoke(EXEC_RUN_PROCESS, {
+        projectRuntimeUpdate,
+        responseChannel,
+    }).catch((e) => {
+        actionButtonDisable.value = false;
+        console.log("Error happen when get project code: " + e);
+    });
+}
+
 function onCPEditComplete(event: DataTableCellEditCompleteEvent) {
     let {data, newValue, field} = event;
     data[field] = newValue;
@@ -154,7 +176,7 @@ const actionCommands = [
     {
         label: "RUN",
         icon: "pi pi-caret-right",
-        command: execBuildProcess,
+        command: execRunProcess,
     },
     {
         label: "DEBUG",

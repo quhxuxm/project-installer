@@ -1,10 +1,12 @@
 use crate::command::message::{
     GlobalLogEvent, GlobalLogLevel, GlobalNotificationEvent, GlobalNotificationLevel,
 };
+use crate::config::ProjectConfig;
 use derive_more::Display;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use std::ops::Deref;
+use std::path::PathBuf;
 use tauri::ipc::Channel;
 use tauri::{AppHandle, Emitter};
 use tracing::error;
@@ -104,4 +106,10 @@ pub fn ack_frontend_action(response_channel: &Channel<bool>) {
     if let Err(e) = response_channel.send(true) {
         error!("Fail ack to frontend action: {e:?}");
     };
+}
+
+pub fn generate_customized_properties_dir(project: &ProjectConfig) -> PathBuf {
+    project
+        .local_repo_path
+        .join(format!("{}-configuration", project.working_branch))
 }
