@@ -15,7 +15,7 @@ pub struct GetBranchesRequest {
     pub github_repo_url: String,
 }
 
-pub fn clone_code(
+pub async fn clone_code(
     app_handle: &AppHandle,
     project_id: &ProjectId,
     response_channel: Channel<bool>,
@@ -24,20 +24,7 @@ pub fn clone_code(
     let project_id = project_id.clone();
     let app_handle = app_handle.clone();
     tauri::async_runtime::spawn(async move {
-        let tool_config = match TOOL_CONFIG.read().map_err(|_| Error::LockFail) {
-            Ok(config) => config,
-            Err(e) => {
-                ack_frontend_action(&response_channel);
-
-                push_global_log_to_frontend(
-                    &app_handle,
-                    &project_id,
-                    format!("Fail to get tool config: {e}"),
-                    GlobalLogLevel::Error,
-                );
-                return;
-            }
-        };
+        let tool_config = TOOL_CONFIG.read().await;
         let github_config = &tool_config.github;
         let projects_config = &tool_config.projects;
         let project_config = match projects_config.get(&project_id) {
@@ -245,8 +232,8 @@ pub fn clone_code(
     Ok(())
 }
 
-pub fn fetch_branch_list(project_id: &ProjectId) -> Result<Vec<String>, Error> {
-    let tool_config = TOOL_CONFIG.read().map_err(|_| Error::LockFail)?;
+pub async fn fetch_branch_list(project_id: &ProjectId) -> Result<Vec<String>, Error> {
+    let tool_config = TOOL_CONFIG.read().await;
     let github_config = &tool_config.github;
     let projects_config = &tool_config.projects;
     let project_config = projects_config

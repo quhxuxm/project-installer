@@ -14,21 +14,21 @@ use tracing::info;
 
 #[tauri::command]
 pub async fn get_project_runtime_summaries() -> Result<Vec<ProjectRuntimeSummary>, Error> {
-    load_project_runtime_summaries()
+    load_project_runtime_summaries().await
 }
 #[tauri::command]
 pub async fn get_project_runtime_detail(project_id: &str) -> Result<ProjectRuntimeDetail, Error> {
-    load_project_runtime_detail(&project_id.into())
+    load_project_runtime_detail(&project_id.into()).await
 }
 
 #[tauri::command]
 pub async fn get_github_runtime_detail() -> Result<GitHubRuntimeDetail, Error> {
-    load_github_runtime_detail()
+    load_github_runtime_detail().await
 }
 
 #[tauri::command]
 pub async fn save_project(project_runtime_update: ProjectRuntimeUpdate) -> Result<(), Error> {
-    let mut tool_config = TOOL_CONFIG.write().map_err(|_| Error::LockFail)?;
+    let mut tool_config = TOOL_CONFIG.write().await;
     let project = tool_config
         .projects
         .get_mut(&project_runtime_update.project_id)
@@ -59,7 +59,7 @@ pub async fn get_project_code(
     info!("Receive project runtime update: {project_runtime_update:#?}");
     let project_id = project_runtime_update.project_id.clone();
     save_project(project_runtime_update).await?;
-    repo::clone_code(&app_handle, &project_id.into(), response_channel)
+    repo::clone_code(&app_handle, &project_id.into(), response_channel).await
 }
 
 #[tauri::command]
@@ -71,7 +71,7 @@ pub async fn exec_build_process(
     info!("Receive project runtime update: {project_runtime_update:#?}");
     let project_id = project_runtime_update.project_id.clone();
     save_project(project_runtime_update).await?;
-    process::execute_build_process(&app_handle, &project_id.into(), response_channel)
+    process::execute_build_process(&app_handle, &project_id.into(), response_channel).await
 }
 
 #[tauri::command]
@@ -83,5 +83,5 @@ pub async fn exec_run_process(
     info!("Receive project runtime update: {project_runtime_update:#?}");
     let project_id = project_runtime_update.project_id.clone();
     save_project(project_runtime_update).await?;
-    process::execute_run_process(&app_handle, &project_id.into(), response_channel)
+    process::execute_run_process(&app_handle, &project_id.into(), response_channel).await
 }

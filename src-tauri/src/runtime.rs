@@ -68,8 +68,8 @@ pub struct ProjectRuntimeSummary {
     pub description: String,
 }
 
-pub fn load_github_runtime_detail() -> Result<GitHubRuntimeDetail, Error> {
-    let tool_config = TOOL_CONFIG.read().map_err(|_| Error::LockFail)?;
+pub async fn load_github_runtime_detail() -> Result<GitHubRuntimeDetail, Error> {
+    let tool_config = TOOL_CONFIG.read().await;
     Ok(GitHubRuntimeDetail {
         username: tool_config.github.username.clone(),
         token: tool_config.github.token.clone(),
@@ -77,8 +77,8 @@ pub fn load_github_runtime_detail() -> Result<GitHubRuntimeDetail, Error> {
     })
 }
 
-pub fn load_project_runtime_summaries() -> Result<Vec<ProjectRuntimeSummary>, Error> {
-    let tool_config = TOOL_CONFIG.read().map_err(|_| Error::LockFail)?;
+pub async fn load_project_runtime_summaries() -> Result<Vec<ProjectRuntimeSummary>, Error> {
+    let tool_config = TOOL_CONFIG.read().await;
     let mut summaries = tool_config
         .projects
         .iter()
@@ -92,13 +92,13 @@ pub fn load_project_runtime_summaries() -> Result<Vec<ProjectRuntimeSummary>, Er
     Ok(summaries)
 }
 
-pub fn load_project_runtime_detail(project_id: &ProjectId) -> Result<ProjectRuntimeDetail, Error> {
-    let tool_config = TOOL_CONFIG.read().map_err(|_| Error::LockFail)?;
+pub async fn load_project_runtime_detail(project_id: &ProjectId) -> Result<ProjectRuntimeDetail, Error> {
+    let tool_config = TOOL_CONFIG.read().await;
     let project_config = tool_config
         .projects
         .get(project_id)
         .ok_or(Error::ProjectNotFound(project_id.clone()))?;
-    let available_branches = repo::fetch_branch_list(project_id)?;
+    let available_branches = repo::fetch_branch_list(project_id).await?;
     let mut customized_properties = project_config
         .customized_properties
         .iter()

@@ -1,8 +1,9 @@
 use crate::{common::ProjectId, error::Error};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use std::sync::RwLock;
+
 use std::{collections::HashMap, fs, sync::LazyLock};
+use tokio::sync::RwLock;
 
 const CONFIG_FILE_NAME: &str = "config.toml";
 pub static TOOL_CONFIG: LazyLock<RwLock<ToolConfig>> =

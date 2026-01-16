@@ -1,4 +1,3 @@
-use std::fs::OpenOptions;
 use crate::command::message::{GlobalLogLevel, GlobalNotificationLevel};
 use crate::common::{
     ack_frontend_action, generate_customized_properties_dir, parse_global_log_level,
@@ -6,16 +5,22 @@ use crate::common::{
 };
 use crate::config::{ProjectConfig, TOOL_CONFIG};
 use crate::error::Error;
+use std::collections::HashMap;
 
 use java_properties::write;
 use std::io::BufWriter;
+use std::sync::{Arc, LazyLock};
 use tauri::ipc::Channel;
 use tauri::AppHandle;
-use tauri_plugin_shell::process::CommandEvent;
+use tauri_plugin_shell::process::{CommandChild, CommandEvent};
 use tauri_plugin_shell::ShellExt;
+use tokio::sync::Mutex;
 use tracing::{error, info};
 
-fn execute_program(
+static PROCESS_REPO: LazyLock<Arc<Mutex<HashMap<ProjectId, CommandChild>>>> =
+    LazyLock::new(|| Default::default());
+
+async fn execute_program(
     app_handle: &AppHandle,
     project_id: &ProjectId,
     command: &str,
@@ -124,12 +129,12 @@ fn execute_program(
     Ok(())
 }
 
-pub fn execute_build_process(
+pub async fn execute_build_process(
     app_handle: &AppHandle,
     project_id: &ProjectId,
     response_channel: Channel<bool>,
 ) -> Result<(), Error> {
-    let tool_config = TOOL_CONFIG.read().map_err(|_| Error::LockFail)?;
+    let tool_config = TOOL_CONFIG.read().await;
     let projects_config = &tool_config.projects;
     let project_config = projects_config
         .get(project_id)
@@ -144,22 +149,23 @@ pub fn execute_build_process(
         build_command,
         &project_config,
         response_channel,
-    )?;
+    )
+    .await?;
     Ok(())
 }
 
-pub fn execute_run_process(
+pub async fn execute_run_process(
     app_handle: &AppHandle,
     project_id: &ProjectId,
     response_channel: Channel<bool>,
 ) -> Result<(), Error> {
-    let tool_config = TOOL_CONFIG.read().map_err(|_| Error::LockFail)?;
+    let tool_config = TOOL_CONFIG.read().await;
     let projects_config = &tool_config.projects;
     let project_config = projects_config
         .get(project_id)
         .ok_or(Error::ProjectNotFound(project_id.clone()))?;
     let customized_cfg_dir = generate_customized_properties_dir(project_config);
-    if !customized_cfg_dir.exists(){
+    if !customized_cfg_dir.exists() {
         std::fs::create_dir_all(&customized_cfg_dir)?;
     }
     let customized_properties_file = customized_cfg_dir.join(format!("{project_id}.properties"));
@@ -178,6 +184,7 @@ pub fn execute_run_process(
         run_command,
         &project_config,
         response_channel,
-    )?;
+    )
+    .await?;
     Ok(())
 }
