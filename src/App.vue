@@ -1,16 +1,31 @@
 <script lang="ts" setup>
 import {onMounted, ref} from "vue";
-import {Splitter, SplitterPanel} from "primevue";
+import {Splitter, SplitterPanel, useToast} from "primevue";
 import {invoke} from "@tauri-apps/api/core";
-import {GET_PROJECT_RUNTIME_SUMMARIES_CMD} from "./common.ts";
+import {BACKEND_EVENT_GLOBAL_NOTIFICATION, GET_PROJECT_RUNTIME_SUMMARIES_CMD} from "./common.ts";
 import {ProjectRuntimeSummary} from "./messages/project.ts";
 import LogArea from "./views/LogArea.vue";
+import {Event, listen} from "@tauri-apps/api/event";
+import {GlobalNotificationEvent} from "./messages/notification.ts";
 
 let projectRuntimeSummaries = ref<ProjectRuntimeSummary[]>([]);
 
 onMounted(async () => {
     projectRuntimeSummaries.value = await invoke<ProjectRuntimeSummary[]>(GET_PROJECT_RUNTIME_SUMMARIES_CMD);
 });
+
+const toast = useToast();
+
+
+listen(BACKEND_EVENT_GLOBAL_NOTIFICATION, (event: Event<GlobalNotificationEvent>) => {
+    toast.add({
+        severity: event.payload.level.toLowerCase(),
+        summary: event.payload.summary,
+        detail: event.payload.message,
+        life: 5000
+    })
+})
+
 </script>
 
 <template>

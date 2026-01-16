@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 import {Event, listen} from "@tauri-apps/api/event";
 import {Column, DataTable} from "primevue";
-import {LogEvent} from "../messages/log.ts";
+import {GlobalLogEvent} from "../messages/log.ts";
 import {ref} from "vue";
-import {BACKEND_EVENT_LOG_MESSAGE} from "../common.ts";
+import {BACKEND_EVENT_GLOBAL_LOG} from "../common.ts";
 
-let logEvents = ref<LogEvent[]>([]);
+let logEvents = ref<GlobalLogEvent[]>([]);
 
-listen(BACKEND_EVENT_LOG_MESSAGE, (event: Event<LogEvent>) => {
+listen(BACKEND_EVENT_GLOBAL_LOG, (event: Event<GlobalLogEvent>) => {
     logEvents.value.push(event.payload);
     while (logEvents.value.length > 1000) {
         logEvents.value.shift();

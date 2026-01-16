@@ -16,7 +16,7 @@ pub struct ProjectRuntimeUpdate {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum LogLevel {
+pub enum GlobalLogLevel {
     Info,
     Warn,
     Error,
@@ -25,8 +25,24 @@ pub enum LogLevel {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct LogEvent {
+pub struct GlobalLogEvent {
     pub project_id: ProjectId,
     pub message: String,
-    pub level: LogLevel,
+    pub level: GlobalLogLevel,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum GlobalNotificationLevel {
+    Info,
+    Error,
+    Warn,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GlobalNotificationEvent {
+    pub project_id: ProjectId,
+    pub message: String,
+    pub summary: String,
+    pub level: GlobalNotificationLevel,
 }

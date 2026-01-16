@@ -1,5 +1,8 @@
-use crate::command::message::LogLevel;
-use crate::common::{ack_frontend_action, parse_log_level, push_log_to_frontend, ProjectId};
+use crate::command::message::{GlobalLogLevel, GlobalNotificationLevel};
+use crate::common::{
+    ack_frontend_action, parse_global_log_level, push_global_log_to_frontend,
+    push_global_notification_to_frontend, ProjectId,
+};
 use crate::config::{ProjectConfig, TOOL_CONFIG};
 use crate::error::Error;
 use tauri::ipc::Channel;
@@ -25,14 +28,12 @@ fn execute_program(
                 .join(&project_config.working_branch),
         )
         .spawn()?;
-    push_log_to_frontend(
+    let child_process_id = child.pid();
+    push_global_log_to_frontend(
         &app_handle,
         &project_id,
-        format!(
-            "Child process for [{command}] spawned, process id: {}",
-            child.pid()
-        ),
-        LogLevel::Info,
+        format!("Child process for [{command}] spawned, process id: {child_process_id}",),
+        GlobalLogLevel::Info,
     );
     let project_id = project_id.clone();
     let app_handle = app_handle.clone();
@@ -48,7 +49,12 @@ fn execute_program(
                         }
                     };
 
-                    push_log_to_frontend(&app_handle, &project_id, line.clone(), LogLevel::Error);
+                    push_global_log_to_frontend(
+                        &app_handle,
+                        &project_id,
+                        line.clone(),
+                        GlobalLogLevel::Error,
+                    );
                 }
                 CommandEvent::Stdout(std_out) => {
                     let line = match String::from_utf8(std_out) {
@@ -58,20 +64,43 @@ fn execute_program(
                             continue;
                         }
                     };
-                    let level = parse_log_level(&line);
-                    push_log_to_frontend(&app_handle, &project_id, line.clone(), level);
+                    let level = parse_global_log_level(&line);
+                    push_global_log_to_frontend(&app_handle, &project_id, line.clone(), level);
                     info!("[CHILD OUTPUT] {}", line);
                 }
                 CommandEvent::Error(error) => {
-                    push_log_to_frontend(&app_handle, &project_id, error, LogLevel::Error);
+                    push_global_log_to_frontend(
+                        &app_handle,
+                        &project_id,
+                        error,
+                        GlobalLogLevel::Error,
+                    );
                 }
                 CommandEvent::Terminated(terminate) => {
                     ack_frontend_action(&response_channel);
-                    let mut level = LogLevel::Error;
+                    let mut level = GlobalLogLevel::Error;
                     if let Some(0) = terminate.code {
-                        level = LogLevel::Info
+                        level = GlobalLogLevel::Info;
+                        push_global_notification_to_frontend(&app_handle, &project_id,
+                        format!(
+                            "Project {project_id} sub process {child_process_id} terminated with code: {:?}, signal: {:?}",
+                            terminate.code, terminate.signal
+                        ),
+                         format!("Project {project_id} build process success."),
+                        GlobalNotificationLevel::Info);
+                    } else {
+                        push_global_notification_to_frontend(
+                            &app_handle,
+                            &project_id,
+                            format!(
+                                "Project {project_id} sub process {child_process_id} terminated with code: {:?}, signal: {:?}",
+                                terminate.code, terminate.signal
+                            ),
+                            format!("Project {project_id} build process fail."),
+                            GlobalNotificationLevel::Error);
                     }
-                    push_log_to_frontend(
+
+                    push_global_log_to_frontend(
                         &app_handle,
                         &project_id,
                         format!(

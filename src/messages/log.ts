@@ -1,17 +1,13 @@
-export enum LogLevel {
+export enum GlobalLogLevel {
     DEBUG = 'debug',
     INFO = 'info',
     WARN = 'warn',
     ERROR = 'error',
 }
 
-export enum LogSource {
-    GITHUB = 'github',
-    BACKEND_COMMAND = 'build-command',
-}
 
-export type LogEvent = {
+export type GlobalLogEvent = {
     projectId: string;
-    level: LogLevel;
+    level: GlobalLogLevel;
     message: string;
 }

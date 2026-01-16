@@ -1,5 +1,5 @@
-use crate::command::message::LogLevel;
-use crate::common::{ack_frontend_action, push_log_to_frontend, GIT_DIR, RGS_PMT_DIR};
+use crate::command::message::GlobalLogLevel;
+use crate::common::{ack_frontend_action, push_global_log_to_frontend, GIT_DIR, RGS_PMT_DIR};
 use crate::{common::ProjectId, config::TOOL_CONFIG, error::Error};
 use git2::{build::RepoBuilder, Cred, FetchOptions, ProxyOptions, RemoteCallbacks, Repository};
 use tauri::ipc::Channel;
@@ -25,11 +25,11 @@ pub fn clone_code(
             Ok(config) => config,
             Err(e) => {
                 ack_frontend_action(&response_channel);
-                push_log_to_frontend(
+                push_global_log_to_frontend(
                     &app_handle,
                     &project_id,
                     format!("Fail to get tool config: {e}"),
-                    LogLevel::Error,
+                    GlobalLogLevel::Error,
                 );
                 return;
             }
@@ -40,11 +40,11 @@ pub fn clone_code(
             Some(project_config) => project_config,
             None => {
                 ack_frontend_action(&response_channel);
-                push_log_to_frontend(
+                push_global_log_to_frontend(
                     &app_handle,
                     &project_id,
                     format!("Fail to get project config: {project_id}"),
-                    LogLevel::Error,
+                    GlobalLogLevel::Error,
                 );
                 return;
             }
@@ -56,11 +56,11 @@ pub fn clone_code(
         callbacks.transfer_progress(|progress| {
             let received_objects = progress.received_objects();
             let total_objects = progress.total_objects();
-            push_log_to_frontend(
+            push_global_log_to_frontend(
                 &app_handle,
                 &project_id,
                 format!("Receiving data from GitHub: {received_objects}/{total_objects}"),
-                LogLevel::Info,
+                GlobalLogLevel::Info,
             );
             true
         });
@@ -74,14 +74,14 @@ pub fn clone_code(
         let project_local_path = project_config
             .local_repo_path
             .join(&project_config.working_branch);
-        push_log_to_frontend(
+        push_global_log_to_frontend(
             &app_handle,
             &project_id,
             format!(
                 "Cloning data from GitHub: {} to {:?}",
                 project_config.remote_repo_url, project_local_path
             ),
-            LogLevel::Info,
+            GlobalLogLevel::Info,
         );
         if project_local_path.exists() {
             let repository = match Repository::open(&project_local_path) {
@@ -92,14 +92,14 @@ pub fn clone_code(
                         project_config.remote_repo_url, project_local_path
                     );
                     ack_frontend_action(&response_channel);
-                    push_log_to_frontend(
+                    push_global_log_to_frontend(
                         &app_handle,
                         &project_id,
                         format!(
                             "Fail to clone data from GitHub: {} to {:?}",
                             project_config.remote_repo_url, project_local_path
                         ),
-                        LogLevel::Error,
+                        GlobalLogLevel::Error,
                     );
                     return;
                 }
@@ -113,14 +113,14 @@ pub fn clone_code(
                         project_config.remote_repo_url, project_local_path
                     );
                     ack_frontend_action(&response_channel);
-                    push_log_to_frontend(
+                    push_global_log_to_frontend(
                         &app_handle,
                         &project_id,
                         format!(
                             "Fail to clone data from GitHub: {} to {:?}",
                             project_config.remote_repo_url, project_local_path
                         ),
-                        LogLevel::Error,
+                        GlobalLogLevel::Error,
                     );
                     return;
                 }
@@ -136,14 +136,14 @@ pub fn clone_code(
                     project_config.remote_repo_url, project_local_path
                 );
                 ack_frontend_action(&response_channel);
-                push_log_to_frontend(
+                push_global_log_to_frontend(
                     &app_handle,
                     &project_id,
                     format!(
                         "Fail to clone data from GitHub: {} to {:?}",
                         project_config.remote_repo_url, project_local_path
                     ),
-                    LogLevel::Error,
+                    GlobalLogLevel::Error,
                 );
                 return;
             };
@@ -154,26 +154,26 @@ pub fn clone_code(
             if let Err(e) = builder.clone(&project_config.remote_repo_url, &project_local_path) {
                 error!("Fail to clone GitHub repository: {e:?}");
                 ack_frontend_action(&response_channel);
-                push_log_to_frontend(
+                push_global_log_to_frontend(
                     &app_handle,
                     &project_id,
                     format!(
                         "Fail to clone data from GitHub: {} to {:?}",
                         project_config.remote_repo_url, project_local_path
                     ),
-                    LogLevel::Error,
+                    GlobalLogLevel::Error,
                 );
             };
         }
         ack_frontend_action(&response_channel);
-        push_log_to_frontend(
+        push_global_log_to_frontend(
             &app_handle,
             &project_id,
             format!(
                 "Successfully cloned data from GitHub: {} to {:?}",
                 project_config.remote_repo_url, project_local_path
             ),
-            LogLevel::Info,
+            GlobalLogLevel::Info,
         );
     });
 

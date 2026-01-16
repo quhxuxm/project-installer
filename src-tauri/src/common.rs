@@ -1,4 +1,4 @@
-use crate::command::message::{LogEvent, LogLevel};
+use crate::command::message::{GlobalLogEvent, GlobalLogLevel, GlobalNotificationEvent, GlobalNotificationLevel};
 use derive_more::Display;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
@@ -11,8 +11,10 @@ pub static RGS_PMT_DIR: &str = ".rgspmt";
 pub static GIT_DIR: &str = ".git";
 #[derive(Debug, Copy, Clone, Display)]
 pub enum BackendEvent {
-    #[display("__backend_event_log_message__")]
-    LogMessage,
+    #[display("__backend_event_global_log__")]
+    GlobalLogEvent,
+    #[display("__backend_event_global_notification__")]
+    GlobalNotificationEvent,
 }
 #[derive(Debug, Serialize, Deserialize, Hash, Eq, PartialEq, Ord, PartialOrd, Clone)]
 pub struct ProjectId(pub String);
@@ -42,37 +44,57 @@ impl From<&str> for ProjectId {
     }
 }
 
-pub fn parse_log_level(line: &str) -> LogLevel {
+pub fn parse_global_log_level(line: &str) -> GlobalLogLevel {
     if line.to_uppercase().contains("[ERROR]") {
-        LogLevel::Error
+        GlobalLogLevel::Error
     } else {
         if line.to_uppercase().contains("[DEBUG]") {
-            LogLevel::Debug
+            GlobalLogLevel::Debug
         } else {
             if line.to_uppercase().contains("[WARN]") {
-                LogLevel::Warn
+                GlobalLogLevel::Warn
             } else {
-                LogLevel::Info
+                GlobalLogLevel::Info
             }
         }
     }
 }
 
-pub fn push_log_to_frontend(
+pub fn push_global_log_to_frontend(
     app_handle: &AppHandle,
     project_id: &ProjectId,
     message: String,
-    level: LogLevel,
+    level: GlobalLogLevel,
 ) {
     if let Err(e) = app_handle.emit(
-        &BackendEvent::LogMessage.to_string(),
-        LogEvent {
+        &BackendEvent::GlobalLogEvent.to_string(),
+        GlobalLogEvent {
             project_id: project_id.clone(),
             message,
             level,
         },
     ) {
         error!("Fail to emit backend event to frontend: {e:?}")
+    };
+}
+
+pub fn push_global_notification_to_frontend(
+    app_handle: &AppHandle,
+    project_id: &ProjectId,
+    message: String,
+    summary: String,
+    level: GlobalNotificationLevel,
+) {
+    if let Err(e) = app_handle.emit(
+        &BackendEvent::GlobalNotificationEvent.to_string(),
+        GlobalNotificationEvent {
+            project_id: project_id.clone(),
+            message,
+            summary,
+            level,
+        },
+    ) {
+        error!("Fail to emit backend notification to frontend: {e:?}")
     };
 }
 
