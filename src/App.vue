@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import {onMounted, ref} from "vue";
-import {Splitter, SplitterPanel, useToast} from "primevue";
+import {Splitter, SplitterPanel, Toast, useToast} from "primevue";
 import {invoke} from "@tauri-apps/api/core";
 import {BACKEND_EVENT_GLOBAL_NOTIFICATION, GET_PROJECT_RUNTIME_SUMMARIES_CMD} from "./common.ts";
 import {ProjectRuntimeSummary} from "./messages/project.ts";
-import LogArea from "./views/LogArea.vue";
+import GlobalLogArea from "./views/GlobalLogArea.vue";
 import {Event, listen} from "@tauri-apps/api/event";
 import {GlobalNotificationEvent} from "./messages/notification.ts";
 
@@ -16,13 +16,12 @@ onMounted(async () => {
 
 const toast = useToast();
 
-
 listen(BACKEND_EVENT_GLOBAL_NOTIFICATION, (event: Event<GlobalNotificationEvent>) => {
     toast.add({
         severity: event.payload.level.toLowerCase(),
         summary: event.payload.summary,
         detail: event.payload.message,
-        life: 5000
+        life: 10000
     })
 })
 
@@ -35,6 +34,7 @@ listen(BACKEND_EVENT_GLOBAL_NOTIFICATION, (event: Event<GlobalNotificationEvent>
                 <span class="text-2xl font-black"> RGS<span
                     class="text-primary">PROJECTS</span></span>
             </span>
+            <Toast></Toast>
         </div>
         <Splitter class="grow h-11/12" layout="vertical">
             <SplitterPanel :size="80" class="w-full" style="user-select: none">
@@ -77,7 +77,7 @@ listen(BACKEND_EVENT_GLOBAL_NOTIFICATION, (event: Event<GlobalNotificationEvent>
                 </Splitter>
             </SplitterPanel>
             <SplitterPanel :size="20" class="flex flex-col h-4/11 w-full" style="user-select: none">
-                <LogArea></LogArea>
+                <GlobalLogArea></GlobalLogArea>
             </SplitterPanel>
         </Splitter>
     </div>

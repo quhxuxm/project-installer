@@ -87,7 +87,7 @@ fn execute_program(
                             terminate.code, terminate.signal
                         ),
                          format!("Project {project_id} build process success."),
-                        GlobalNotificationLevel::Info);
+                        GlobalNotificationLevel::Success);
                     } else {
                         push_global_notification_to_frontend(
                             &app_handle,

@@ -10,6 +10,7 @@ import MavenCfgView from "./views/MavenCfgView.vue";
 import NodeJsCfgView from "./views/NodeJsCfgView.vue";
 import App from "./App.vue";
 import ProjectDetailCfgView from "./views/ProjectDetailCfgView.vue";
+import {ToastService} from "primevue";
 
 
 const routes = [
@@ -31,6 +32,6 @@ app
         theme: {
             preset: Aura,
         },
-    })
+    }).use(ToastService)
     .use(router);
 app.mount("#app");

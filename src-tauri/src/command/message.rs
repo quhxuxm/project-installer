@@ -33,6 +33,7 @@ pub struct GlobalLogEvent {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum GlobalNotificationLevel {
+    Success,
     Info,
     Error,
     Warn,
