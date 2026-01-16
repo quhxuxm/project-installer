@@ -1,5 +1,8 @@
-use crate::command::message::GlobalLogLevel;
-use crate::common::{ack_frontend_action, push_global_log_to_frontend, GIT_DIR, RGS_PMT_DIR};
+use crate::command::message::{GlobalLogLevel, GlobalNotificationLevel};
+use crate::common::{
+    ack_frontend_action, push_global_log_to_frontend, push_global_notification_to_frontend,
+    GIT_DIR, RGS_PMT_DIR,
+};
 use crate::{common::ProjectId, config::TOOL_CONFIG, error::Error};
 use git2::{build::RepoBuilder, Cred, FetchOptions, ProxyOptions, RemoteCallbacks, Repository};
 use tauri::ipc::Channel;
@@ -25,6 +28,7 @@ pub fn clone_code(
             Ok(config) => config,
             Err(e) => {
                 ack_frontend_action(&response_channel);
+
                 push_global_log_to_frontend(
                     &app_handle,
                     &project_id,
@@ -74,6 +78,16 @@ pub fn clone_code(
         let project_local_path = project_config
             .local_repo_path
             .join(&project_config.working_branch);
+        push_global_notification_to_frontend(
+            &app_handle,
+            &project_id,
+            format!(
+                "Begin to cloned data from GitHub: {} to {:?}",
+                project_config.remote_repo_url, project_local_path
+            ),
+            "GitHub repository clone begin.".to_string(),
+            GlobalNotificationLevel::Info,
+        );
         push_global_log_to_frontend(
             &app_handle,
             &project_id,
@@ -92,6 +106,16 @@ pub fn clone_code(
                         project_config.remote_repo_url, project_local_path
                     );
                     ack_frontend_action(&response_channel);
+                    push_global_notification_to_frontend(
+                        &app_handle,
+                        &project_id,
+                        format!(
+                            "Fail cloned data from GitHub: {} to {:?}",
+                            project_config.remote_repo_url, project_local_path
+                        ),
+                        "GitHub repository clone fail.".to_string(),
+                        GlobalNotificationLevel::Error,
+                    );
                     push_global_log_to_frontend(
                         &app_handle,
                         &project_id,
@@ -113,6 +137,16 @@ pub fn clone_code(
                         project_config.remote_repo_url, project_local_path
                     );
                     ack_frontend_action(&response_channel);
+                    push_global_notification_to_frontend(
+                        &app_handle,
+                        &project_id,
+                        format!(
+                            "Fail cloned data from GitHub: {} to {:?}",
+                            project_config.remote_repo_url, project_local_path
+                        ),
+                        "GitHub repository clone fail.".to_string(),
+                        GlobalNotificationLevel::Error,
+                    );
                     push_global_log_to_frontend(
                         &app_handle,
                         &project_id,
@@ -136,6 +170,16 @@ pub fn clone_code(
                     project_config.remote_repo_url, project_local_path
                 );
                 ack_frontend_action(&response_channel);
+                push_global_notification_to_frontend(
+                    &app_handle,
+                    &project_id,
+                    format!(
+                        "Fail cloned data from GitHub: {} to {:?}",
+                        project_config.remote_repo_url, project_local_path
+                    ),
+                    "GitHub repository clone fail.".to_string(),
+                    GlobalNotificationLevel::Error,
+                );
                 push_global_log_to_frontend(
                     &app_handle,
                     &project_id,
@@ -154,6 +198,16 @@ pub fn clone_code(
             if let Err(e) = builder.clone(&project_config.remote_repo_url, &project_local_path) {
                 error!("Fail to clone GitHub repository: {e:?}");
                 ack_frontend_action(&response_channel);
+                push_global_notification_to_frontend(
+                    &app_handle,
+                    &project_id,
+                    format!(
+                        "Fail cloned data from GitHub: {} to {:?}",
+                        project_config.remote_repo_url, project_local_path
+                    ),
+                    "GitHub repository clone fail.".to_string(),
+                    GlobalNotificationLevel::Error,
+                );
                 push_global_log_to_frontend(
                     &app_handle,
                     &project_id,
@@ -166,6 +220,17 @@ pub fn clone_code(
             };
         }
         ack_frontend_action(&response_channel);
+
+        push_global_notification_to_frontend(
+            &app_handle,
+            &project_id,
+            format!(
+                "Successfully cloned data from GitHub: {} to {:?}",
+                project_config.remote_repo_url, project_local_path
+            ),
+            "GitHub repository clone success.".to_string(),
+            GlobalNotificationLevel::Success,
+        );
         push_global_log_to_frontend(
             &app_handle,
             &project_id,
