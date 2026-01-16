@@ -73,13 +73,13 @@ pub fn clone_code(
         fetch_options.remote_callbacks(callbacks);
         let project_local_path = project_config
             .local_repo_path
-            .join(&project_config.github_branch);
+            .join(&project_config.working_branch);
         push_log_to_frontend(
             &app_handle,
             &project_id,
             format!(
                 "Cloning data from GitHub: {} to {:?}",
-                project_config.github_repo_url, project_local_path
+                project_config.remote_repo_url, project_local_path
             ),
             LogLevel::Info,
         );
@@ -89,7 +89,7 @@ pub fn clone_code(
                 Err(e) => {
                     error!(
                         "Fail to clone data from GitHib: {} to {:?} because of error: {e:?}",
-                        project_config.github_repo_url, project_local_path
+                        project_config.remote_repo_url, project_local_path
                     );
                     ack_frontend_action(&response_channel);
                     push_log_to_frontend(
@@ -97,7 +97,7 @@ pub fn clone_code(
                         &project_id,
                         format!(
                             "Fail to clone data from GitHub: {} to {:?}",
-                            project_config.github_repo_url, project_local_path
+                            project_config.remote_repo_url, project_local_path
                         ),
                         LogLevel::Error,
                     );
@@ -110,7 +110,7 @@ pub fn clone_code(
                 Err(e) => {
                     error!(
                         "Fail to clone data from GitHib: {} to {:?} because of error: {e:?}",
-                        project_config.github_repo_url, project_local_path
+                        project_config.remote_repo_url, project_local_path
                     );
                     ack_frontend_action(&response_channel);
                     push_log_to_frontend(
@@ -118,7 +118,7 @@ pub fn clone_code(
                         &project_id,
                         format!(
                             "Fail to clone data from GitHub: {} to {:?}",
-                            project_config.github_repo_url, project_local_path
+                            project_config.remote_repo_url, project_local_path
                         ),
                         LogLevel::Error,
                     );
@@ -127,13 +127,13 @@ pub fn clone_code(
             };
 
             if let Err(e) = repository.fetch(
-                &[&project_config.github_branch],
+                &[&project_config.working_branch],
                 Some(&mut fetch_options),
                 None,
             ) {
                 error!(
                     "Fail to clone data from GitHib: {} to {:?} because of error: {e:?}",
-                    project_config.github_repo_url, project_local_path
+                    project_config.remote_repo_url, project_local_path
                 );
                 ack_frontend_action(&response_channel);
                 push_log_to_frontend(
@@ -141,7 +141,7 @@ pub fn clone_code(
                     &project_id,
                     format!(
                         "Fail to clone data from GitHub: {} to {:?}",
-                        project_config.github_repo_url, project_local_path
+                        project_config.remote_repo_url, project_local_path
                     ),
                     LogLevel::Error,
                 );
@@ -150,8 +150,8 @@ pub fn clone_code(
         } else {
             let mut builder = RepoBuilder::new();
             builder.fetch_options(fetch_options);
-            builder.branch(&project_config.github_branch);
-            if let Err(e) = builder.clone(&project_config.github_repo_url, &project_local_path) {
+            builder.branch(&project_config.working_branch);
+            if let Err(e) = builder.clone(&project_config.remote_repo_url, &project_local_path) {
                 error!("Fail to clone GitHub repository: {e:?}");
                 ack_frontend_action(&response_channel);
                 push_log_to_frontend(
@@ -159,7 +159,7 @@ pub fn clone_code(
                     &project_id,
                     format!(
                         "Fail to clone data from GitHub: {} to {:?}",
-                        project_config.github_repo_url, project_local_path
+                        project_config.remote_repo_url, project_local_path
                     ),
                     LogLevel::Error,
                 );
@@ -171,7 +171,7 @@ pub fn clone_code(
             &project_id,
             format!(
                 "Successfully cloned data from GitHub: {} to {:?}",
-                project_config.github_repo_url, project_local_path
+                project_config.remote_repo_url, project_local_path
             ),
             LogLevel::Info,
         );
@@ -180,7 +180,7 @@ pub fn clone_code(
     Ok(())
 }
 
-pub fn get_branches(project_id: &ProjectId) -> Result<Vec<String>, Error> {
+pub fn fetch_branch_list(project_id: &ProjectId) -> Result<Vec<String>, Error> {
     let tool_config = TOOL_CONFIG.read().map_err(|_| Error::LockFail)?;
     let github_config = &tool_config.github;
     let projects_config = &tool_config.projects;
@@ -202,7 +202,7 @@ pub fn get_branches(project_id: &ProjectId) -> Result<Vec<String>, Error> {
             .join(RGS_PMT_DIR)
             .join(GIT_DIR),
     )?;
-    let mut remote = temp_repo.remote_anonymous(&project_config.github_repo_url)?;
+    let mut remote = temp_repo.remote_anonymous(&project_config.remote_repo_url)?;
     remote.connect_auth(git2::Direction::Fetch, Some(callbacks), proxy_options)?;
     let remote_refs = remote.list()?;
     let mut branches = Vec::new();

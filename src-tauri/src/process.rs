@@ -22,7 +22,7 @@ fn execute_program(
         .current_dir(
             project_config
                 .local_repo_path
-                .join(&project_config.github_branch),
+                .join(&project_config.working_branch),
         )
         .spawn()?;
     push_log_to_frontend(

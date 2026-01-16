@@ -44,11 +44,11 @@ impl PartialOrd for PropertyItem {
 pub struct ProjectRuntimeDetail {
     pub name: String,
     pub description: String,
-    pub github_branch: String,
-    pub github_repo_url: String,
+    pub working_branch: String,
+    pub remote_repo_url: String,
     pub local_repo_path: PathBuf,
     pub current_process: Option<CurrentProcess>,
-    pub available_github_branches: Vec<String>,
+    pub available_branches: Vec<String>,
     pub build_command: Option<String>,
     pub run_command: Option<String>,
     pub stop_command: Option<String>,
@@ -98,7 +98,7 @@ pub fn load_project_runtime_detail(project_id: &ProjectId) -> Result<ProjectRunt
         .projects
         .get(project_id)
         .ok_or(Error::ProjectNotFound(project_id.clone()))?;
-    let available_github_branches = repo::get_branches(project_id)?;
+    let available_branches = repo::fetch_branch_list(project_id)?;
     let mut customized_properties = project_config
         .customized_properties
         .iter()
@@ -111,9 +111,9 @@ pub fn load_project_runtime_detail(project_id: &ProjectId) -> Result<ProjectRunt
     let project_runtime_detail = ProjectRuntimeDetail {
         name: project_config.name.clone(),
         description: project_config.description.clone(),
-        available_github_branches,
-        github_branch: project_config.github_branch.clone(),
-        github_repo_url: project_config.github_repo_url.clone(),
+        available_branches,
+        working_branch: project_config.working_branch.clone(),
+        remote_repo_url: project_config.remote_repo_url.clone(),
         local_repo_path: project_config.local_repo_path.clone(),
         current_process: None,
         build_command: project_config.build_command.clone(),

@@ -11,11 +11,11 @@ export type PropertyItem = {
 export type ProjectRuntimeDetail = {
     name: string;
     description: string;
-    githubBranch: string;
-    githubRepoUrl: string;
+    workingBranch: string;
+    remoteRepoUrl: string;
     localRepoPath: string;
     currentProcess: string | null | undefined;
-    availableGithubBranches: string[];
+    availableBranches: string[];
     buildCommand: string | null | undefined;
     runCommand: string | null | undefined;
     stopCommand: string | null | undefined;
@@ -29,8 +29,8 @@ export type ProjectRuntimeDetail = {
 
 export type ProjectRuntimeUpdate = {
     projectId: string;
-    githubBranch: string;
-    githubRepoUrl: string;
+    workingBranch: string;
+    remoteRepoUrl: string;
     localRepoPath: string;
     buildCommand: string | null | undefined;
     runCommand: string | null | undefined;

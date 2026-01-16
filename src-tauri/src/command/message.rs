@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct ProjectRuntimeUpdate {
     pub project_id: ProjectId,
-    pub github_branch: String,
-    pub github_repo_url: String,
+    pub working_branch: String,
+    pub remote_repo_url: String,
     pub local_repo_path: String,
     pub build_command: Option<String>,
     pub debug_command: Option<String>,

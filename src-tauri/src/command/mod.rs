@@ -36,8 +36,8 @@ pub async fn save_project(project_runtime_update: ProjectRuntimeUpdate) -> Resul
             project_runtime_update.project_id.clone(),
         ))?;
     project.local_repo_path = project_runtime_update.local_repo_path.into();
-    project.github_branch = project_runtime_update.github_branch;
-    project.github_repo_url = project_runtime_update.github_repo_url;
+    project.working_branch = project_runtime_update.working_branch;
+    project.remote_repo_url = project_runtime_update.remote_repo_url;
     project.customized_build_command = project_runtime_update.build_command;
     project.customized_run_command = project_runtime_update.run_command;
     project.customized_debug_command = project_runtime_update.debug_command;

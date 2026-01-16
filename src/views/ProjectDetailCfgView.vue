@@ -18,11 +18,11 @@ let projectRuntimeDetail = ref<ProjectRuntimeDetail>({
     customizedStopCommand: undefined,
     name: "",
     description: "",
-    githubBranch: "",
-    githubRepoUrl: "",
+    workingBranch: "",
+    remoteRepoUrl: "",
     localRepoPath: "",
     currentProcess: undefined,
-    availableGithubBranches: [],
+    availableBranches: [],
     buildCommand: undefined,
     runCommand: undefined,
     stopCommand: undefined,
@@ -61,11 +61,11 @@ function generateProjectUpdate(): ProjectRuntimeUpdate {
     return {
         buildCommand: buildCommandVal.value,
         debugCommand: debugCommandVal.value,
-        githubRepoUrl: projectRuntimeDetail.value.githubRepoUrl,
+        remoteRepoUrl: projectRuntimeDetail.value.remoteRepoUrl,
         localRepoPath: projectRuntimeDetail.value.localRepoPath,
         runCommand: runCommandVal.value,
         projectId: currentRoute.params.id as string,
-        githubBranch: projectRuntimeDetail.value.githubBranch,
+        workingBranch: projectRuntimeDetail.value.workingBranch,
         customizedProperties: projectRuntimeDetail.value.customizedProperties,
     };
 }
@@ -179,15 +179,15 @@ const actionCommands = [
                 <div class="flex flex-col gap-4">
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="githubBranch">Branch</label>
-                        <Select id="githubBranch" v-model="projectRuntimeDetail.githubBranch"
-                                :options="projectRuntimeDetail.availableGithubBranches"></Select>
+                        <Select id="githubBranch" v-model="projectRuntimeDetail.workingBranch"
+                                :options="projectRuntimeDetail.availableBranches"></Select>
                         <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
                             the GitHub branch.
                         </Message>
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="githubRepositoryUrl">Repository url</label>
-                        <InputText id="githubRepositoryUrl" v-model="projectRuntimeDetail.githubRepoUrl" readonly/>
+                        <InputText id="githubRepositoryUrl" v-model="projectRuntimeDetail.remoteRepoUrl" readonly/>
                         <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
                             the GitHub repository url.
                         </Message>
@@ -201,11 +201,11 @@ const actionCommands = [
                             <span>The concrete local path will be:</span>
                             <span class="text-primary"> {{
                                     projectRuntimeDetail.localRepoPath
-                                }}\{{ projectRuntimeDetail.githubBranch }} </span>
+                                }}\{{ projectRuntimeDetail.workingBranch }} </span>
                             <span>The customized properties directory path will be:</span>
                             <span class="text-primary"> {{
                                     projectRuntimeDetail.localRepoPath
-                                }}\{{ projectRuntimeDetail.githubBranch }}-configuration </span>
+                                }}\{{ projectRuntimeDetail.workingBranch }}-configuration </span>
                         </Message>
                     </div>
                 </div>

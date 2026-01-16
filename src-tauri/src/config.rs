@@ -18,8 +18,8 @@ pub struct ToolConfig {
 pub struct ProjectConfig {
     pub name: String,
     pub description: String,
-    pub github_repo_url: String,
-    pub github_branch: String,
+    pub remote_repo_url: String,
+    pub working_branch: String,
     pub local_repo_path: PathBuf,
     pub build_command: Option<String>,
     pub customized_build_command: Option<String>,
