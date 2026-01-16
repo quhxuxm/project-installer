@@ -9,7 +9,7 @@ let logEvents = ref<LogEvent[]>([]);
 
 listen(BACKEND_EVENT_LOG_MESSAGE, (event: Event<LogEvent>) => {
     logEvents.value.push(event.payload);
-    while (logEvents.value.length > 10000) {
+    while (logEvents.value.length > 1000) {
         logEvents.value.shift();
     }
 })
@@ -21,13 +21,13 @@ listen(BACKEND_EVENT_LOG_MESSAGE, (event: Event<LogEvent>) => {
 </style>
 
 <template>
-    <div class="w-full h-full flex flex-col">
-        <DataTable :value="logEvents" class="h-full grow" column-resize-mode="fit" resizableColumns
+    <div class="w-full h-full ">
+        <DataTable :value="logEvents" class="h-full w-full" resizableColumns
                    scrollHeight="100%"
                    scrollable
                    showGridlines
-                   stripedRows table-style="min-width: 50rem">
-            <Column class="w-1/12" field="projectId" header="PROJECT" header-class="text-sm">
+                   stripedRows>
+            <Column class="w-1/11" field="projectId" header="PROJECT" header-class="text-sm">
                 <template #body="slot">
                   <span :class="slot.data.level.toLowerCase()" class="text-wrap w-full text-xs uppercase"
                         style="user-select: auto">
@@ -43,7 +43,7 @@ listen(BACKEND_EVENT_LOG_MESSAGE, (event: Event<LogEvent>) => {
             <!--                  </span>-->
             <!--                </template>-->
             <!--            </Column>-->
-            <Column class="w-11/12" field="message" header="MESSAGE" header-class="text-sm">
+            <Column class="w-10/11" field="message" header="MESSAGE" header-class="text-sm">
                 <template #body="slot">
                   <span :class="slot.data.level.toLowerCase()" class="text-wrap w-full text-xs"
                         style="user-select: auto">
