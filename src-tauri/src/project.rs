@@ -1,72 +1,9 @@
+use crate::command::message::{
+    CurrentProcess, GitHubRuntimeDetail, ProcessStatus, ProcessType, ProjectRuntimeDetail,
+    ProjectRuntimeSummary, PropertyItem,
+};
+use crate::process::{ChildProcess, PROJECT_CHILD_PROCESS_REPO};
 use crate::{common::ProjectId, config::TOOL_CONFIG, error::Error, repo};
-use serde::{Deserialize, Serialize};
-use std::cmp::Ordering;
-use std::path::PathBuf;
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct GitHubRuntimeDetail {
-    pub username: String,
-    pub token: String,
-    pub proxy: Option<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum CurrentProcess {
-    GitHubPull,
-    BuildingApplication(String),
-    RunningApplication(String),
-    DebugingApplication(String),
-    StopingApplication(String),
-}
-
-#[derive(Debug, Serialize, Deserialize, Eq, Ord, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct PropertyItem {
-    pub key: String,
-    pub value: String,
-}
-
-impl PartialEq<Self> for PropertyItem {
-    fn eq(&self, other: &Self) -> bool {
-        self.key == other.key
-    }
-}
-
-impl PartialOrd for PropertyItem {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.key.partial_cmp(&other.key)
-    }
-}
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ProjectRuntimeDetail {
-    pub name: String,
-    pub description: String,
-    pub working_branch: String,
-    pub remote_repo_url: String,
-    pub local_repo_path: PathBuf,
-    pub current_process: Option<CurrentProcess>,
-    pub available_branches: Vec<String>,
-    pub build_command: Option<String>,
-    pub run_command: Option<String>,
-    pub stop_command: Option<String>,
-    pub debug_command: Option<String>,
-    pub customized_build_command: Option<String>,
-    pub customized_run_command: Option<String>,
-    pub customized_stop_command: Option<String>,
-    pub customized_debug_command: Option<String>,
-    pub customized_properties: Vec<PropertyItem>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ProjectRuntimeSummary {
-    pub project_id: ProjectId,
-    pub name: String,
-    pub description: String,
-}
 
 pub async fn load_github_runtime_detail() -> Result<GitHubRuntimeDetail, Error> {
     let tool_config = TOOL_CONFIG.read().await;
@@ -92,7 +29,9 @@ pub async fn load_project_runtime_summaries() -> Result<Vec<ProjectRuntimeSummar
     Ok(summaries)
 }
 
-pub async fn load_project_runtime_detail(project_id: &ProjectId) -> Result<ProjectRuntimeDetail, Error> {
+pub async fn load_project_runtime_detail(
+    project_id: &ProjectId,
+) -> Result<ProjectRuntimeDetail, Error> {
     let tool_config = TOOL_CONFIG.read().await;
     let project_config = tool_config
         .projects
@@ -108,6 +47,24 @@ pub async fn load_project_runtime_detail(project_id: &ProjectId) -> Result<Proje
         })
         .collect::<Vec<PropertyItem>>();
     customized_properties.sort();
+    let current_process = PROJECT_CHILD_PROCESS_REPO
+        .lock()
+        .await
+        .get(project_id)
+        .map(|process| {
+            let (process_type, pid) = match process.as_ref() {
+                ChildProcess::Build(child) => (ProcessType::Build, child.pid()),
+                ChildProcess::Run(child) => (ProcessType::Run, child.pid()),
+                ChildProcess::Debug(child) => (ProcessType::Debug, child.pid()),
+                ChildProcess::Stop(child) => (ProcessType::Stop, child.pid()),
+            };
+            CurrentProcess {
+                process_type,
+                pid: Some(pid),
+                project_id: project_id.clone(),
+                status: ProcessStatus::Running,
+            }
+        });
     let project_runtime_detail = ProjectRuntimeDetail {
         name: project_config.name.clone(),
         description: project_config.description.clone(),
@@ -115,7 +72,7 @@ pub async fn load_project_runtime_detail(project_id: &ProjectId) -> Result<Proje
         working_branch: project_config.working_branch.clone(),
         remote_repo_url: project_config.remote_repo_url.clone(),
         local_repo_path: project_config.local_repo_path.clone(),
-        current_process: None,
+        current_process,
         build_command: project_config.build_command.clone(),
         run_command: project_config.run_command.clone(),
         stop_command: project_config.stop_command.clone(),

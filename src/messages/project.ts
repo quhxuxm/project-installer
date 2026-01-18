@@ -8,13 +8,22 @@ export type PropertyItem = {
     key: string;
     value: string
 }
+
+
+export type CurrentProcess = {
+    processType: "build" | "run" | "debug" | "stop" | "gitClone";
+    pid: number | null | undefined;
+    projectId: string;
+    status: "running" | "terminatedSuccess" | "terminatedFailure";
+}
+
 export type ProjectRuntimeDetail = {
     name: string;
     description: string;
     workingBranch: string;
     remoteRepoUrl: string;
     localRepoPath: string;
-    currentProcess: string | null | undefined;
+    currentProcess: CurrentProcess | null | undefined;
     availableBranches: string[];
     buildCommand: string | null | undefined;
     runCommand: string | null | undefined;

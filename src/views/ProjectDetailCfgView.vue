@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import {useRoute} from "vue-router";
 import {ref, watch} from "vue";
-import {Button, Column, DataTable, DataTableCellEditCompleteEvent, InputText, Select, SplitButton} from "primevue";
+import {Button, Column, DataTable, DataTableCellEditCompleteEvent, InputText, Select, SplitButton, Tag} from "primevue";
 import Fieldset from "primevue/fieldset";
 import {
     EXEC_BUILD_PROCESS,
@@ -11,7 +11,7 @@ import {
     SAVE_PROJECT_CMD
 } from "../common.ts";
 import {Channel, invoke} from "@tauri-apps/api/core";
-import {ProjectRuntimeDetail, ProjectRuntimeUpdate} from "../messages/project.ts";
+import {CurrentProcess, ProjectRuntimeDetail, ProjectRuntimeUpdate} from "../messages/project.ts";
 
 let currentRoute = useRoute();
 
@@ -39,6 +39,7 @@ let projectRuntimeDetail = ref<ProjectRuntimeDetail>({
 let buildCommandVal = ref();
 let runCommandVal = ref();
 let debugCommandVal = ref();
+let currentProcessVal = ref<CurrentProcess | undefined | null>();
 
 function switchProjectDetail(projectId: string) {
     loading.value = true;
@@ -48,6 +49,8 @@ function switchProjectDetail(projectId: string) {
         runCommandVal.value = backendData.customizedRunCommand ?? backendData.runCommand;
         debugCommandVal.value = backendData.customizedDebugCommand ?? backendData.debugCommand;
         loading.value = false;
+        actionButtonDisable.value = !!backendData.currentProcess;
+        currentProcessVal.value = backendData.currentProcess;
         for (let prop of projectRuntimeDetail.value.customizedProperties) {
             console.log(`Customized property - key: ${prop.key}, value: ${prop.value}`);
         }
@@ -79,9 +82,10 @@ function generateProjectUpdate(): ProjectRuntimeUpdate {
 let actionButtonDisable = ref(false);
 
 function getProjectCode() {
-    let responseChannel = new Channel<boolean>();
-    responseChannel.onmessage = (_) => {
+    let responseChannel = new Channel<CurrentProcess>();
+    responseChannel.onmessage = (currentProcess) => {
         actionButtonDisable.value = false;
+        currentProcessVal.value = currentProcess;
     };
     actionButtonDisable.value = true;
     let projectRuntimeUpdate = generateProjectUpdate();
@@ -110,9 +114,14 @@ function saveProject() {
 }
 
 function execBuildProcess() {
-    let responseChannel = new Channel<boolean>();
-    responseChannel.onmessage = (_) => {
+    let responseChannel = new Channel<CurrentProcess>();
+    responseChannel.onmessage = (currentProcess) => {
         actionButtonDisable.value = false;
+        if (currentProcess.status == "running") {
+            currentProcessVal.value = currentProcess;
+        } else {
+            currentProcessVal.value = undefined;
+        }
     };
     actionButtonDisable.value = true;
     let projectRuntimeUpdate = generateProjectUpdate();
@@ -126,9 +135,14 @@ function execBuildProcess() {
 }
 
 function execRunProcess() {
-    let responseChannel = new Channel<boolean>();
-    responseChannel.onmessage = (_) => {
+    let responseChannel = new Channel<CurrentProcess>();
+    responseChannel.onmessage = (currentProcess) => {
         actionButtonDisable.value = false;
+        if (currentProcess.status == "running") {
+            currentProcessVal.value = currentProcess;
+        } else {
+            currentProcessVal.value = undefined;
+        }
     };
     actionButtonDisable.value = true;
     let projectRuntimeUpdate = generateProjectUpdate();
@@ -193,9 +207,13 @@ const actionCommands = [
         <h1 class="text-2xl text-primary text-center">Loading ...</h1>
     </div>
     <div v-else class="h-full w-full flex flex-col gap-4 justify-self-center">
-        <h1 class="text-2xl text-primary mb-4 uppercase">
+        <div class="text-2xl text-primary mb-4 uppercase flex flex-row gap-4 items-center">
             {{ projectRuntimeDetail.name }}
-        </h1>
+            <Tag v-if="currentProcessVal?.processType==='build'" value="Building"></Tag>
+            <Tag v-if="currentProcessVal?.processType==='run'" value="Running"></Tag>
+            <Tag v-if="currentProcessVal?.processType==='debug'" value="Debugging"></Tag>
+            <Tag v-if="currentProcessVal?.processType==='stop'" value="Stopping"></Tag>
+        </div>
         <div class="flex flex-col gap-4">
             <Fieldset class="text-xl pb-3 pt-3" legend="REPOSITORY CONFIGURATION" toggleable>
                 <div class="flex flex-col gap-4">

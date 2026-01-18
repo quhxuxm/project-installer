@@ -1,6 +1,7 @@
 use crate::common::ProjectId;
-use crate::runtime::PropertyItem;
 use serde::{Deserialize, Serialize};
+use std::cmp::Ordering;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -46,4 +47,86 @@ pub struct GlobalNotificationEvent {
     pub message: String,
     pub summary: String,
     pub level: GlobalNotificationLevel,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitHubRuntimeDetail {
+    pub username: String,
+    pub token: String,
+    pub proxy: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
+#[serde(rename_all = "camelCase")]
+pub enum ProcessType {
+    GitClone,
+    Build,
+    Run,
+    Debug,
+    Stop,
+}
+
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
+#[serde(rename_all = "camelCase")]
+pub enum ProcessStatus {
+    Running,
+    TerminatedSuccess,
+    TerminatedFailure,
+}
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CurrentProcess {
+    pub process_type: ProcessType,
+    pub pid: Option<u32>,
+    pub project_id: ProjectId,
+    pub status: ProcessStatus,
+}
+
+#[derive(Debug, Serialize, Deserialize, Eq, Ord, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct PropertyItem {
+    pub key: String,
+    pub value: String,
+}
+
+impl PartialEq<Self> for PropertyItem {
+    fn eq(&self, other: &Self) -> bool {
+        self.key == other.key
+    }
+}
+
+impl PartialOrd for PropertyItem {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.key.partial_cmp(&other.key)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProjectRuntimeDetail {
+    pub name: String,
+    pub description: String,
+    pub working_branch: String,
+    pub remote_repo_url: String,
+    pub local_repo_path: PathBuf,
+    pub current_process: Option<CurrentProcess>,
+    pub available_branches: Vec<String>,
+    pub build_command: Option<String>,
+    pub run_command: Option<String>,
+    pub stop_command: Option<String>,
+    pub debug_command: Option<String>,
+    pub customized_build_command: Option<String>,
+    pub customized_run_command: Option<String>,
+    pub customized_stop_command: Option<String>,
+    pub customized_debug_command: Option<String>,
+    pub customized_properties: Vec<PropertyItem>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProjectRuntimeSummary {
+    pub project_id: ProjectId,
+    pub name: String,
+    pub description: String,
 }

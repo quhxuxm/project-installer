@@ -1,8 +1,11 @@
-use crate::command::message::{GlobalLogLevel, GlobalNotificationLevel};
-use crate::common::{
-    ack_frontend_action, push_global_log_to_frontend, push_global_notification_to_frontend,
-    GIT_DIR, RGS_PMT_DIR,
+use crate::command::message::{
+    CurrentProcess, GlobalLogLevel, GlobalNotificationLevel, ProcessStatus, ProcessType,
 };
+use crate::common::{
+    push_current_process_status_to_frontend, push_global_log_to_frontend,
+    push_global_notification_to_frontend, GIT_DIR, RGS_PMT_DIR,
+};
+
 use crate::{common::ProjectId, config::TOOL_CONFIG, error::Error};
 use git2::{build::RepoBuilder, Cred, FetchOptions, ProxyOptions, RemoteCallbacks, Repository};
 use tauri::ipc::Channel;
@@ -15,27 +18,35 @@ pub struct GetBranchesRequest {
     pub github_repo_url: String,
 }
 
-pub async fn clone_code(
+pub async fn fetch_code(
     app_handle: &AppHandle,
     project_id: &ProjectId,
-    response_channel: Channel<bool>,
+    frontend_response_channel: Channel<CurrentProcess>,
 ) -> Result<(), Error> {
     std::env::set_var("GIT_CONFIG_PARAMETERS", "'core.longpaths=true'");
     let project_id = project_id.clone();
     let app_handle = app_handle.clone();
-    tauri::async_runtime::spawn(async move {
+    tokio::spawn(async move {
         let tool_config = TOOL_CONFIG.read().await;
         let github_config = &tool_config.github;
         let projects_config = &tool_config.projects;
         let project_config = match projects_config.get(&project_id) {
             Some(project_config) => project_config,
             None => {
-                ack_frontend_action(&response_channel);
                 push_global_log_to_frontend(
                     &app_handle,
                     &project_id,
                     format!("Fail to get project config: {project_id}"),
                     GlobalLogLevel::Error,
+                );
+                push_current_process_status_to_frontend(
+                    &frontend_response_channel,
+                    CurrentProcess {
+                        process_type: ProcessType::GitClone,
+                        pid: None,
+                        project_id: project_id.clone(),
+                        status: ProcessStatus::TerminatedFailure,
+                    },
                 );
                 return;
             }
@@ -92,7 +103,15 @@ pub async fn clone_code(
                         "Fail to clone data from GitHib: {} to {:?} because of error: {e:?}",
                         project_config.remote_repo_url, project_local_path
                     );
-                    ack_frontend_action(&response_channel);
+                    push_current_process_status_to_frontend(
+                        &frontend_response_channel,
+                        CurrentProcess {
+                            process_type: ProcessType::GitClone,
+                            pid: None,
+                            project_id: project_id.clone(),
+                            status: ProcessStatus::TerminatedFailure,
+                        },
+                    );
                     push_global_notification_to_frontend(
                         &app_handle,
                         &project_id,
@@ -123,7 +142,15 @@ pub async fn clone_code(
                         "Fail to clone data from GitHib: {} to {:?} because of error: {e:?}",
                         project_config.remote_repo_url, project_local_path
                     );
-                    ack_frontend_action(&response_channel);
+                    push_current_process_status_to_frontend(
+                        &frontend_response_channel,
+                        CurrentProcess {
+                            process_type: ProcessType::GitClone,
+                            pid: None,
+                            project_id: project_id.clone(),
+                            status: ProcessStatus::TerminatedFailure,
+                        },
+                    );
                     push_global_notification_to_frontend(
                         &app_handle,
                         &project_id,
@@ -156,7 +183,15 @@ pub async fn clone_code(
                     "Fail to clone data from GitHib: {} to {:?} because of error: {e:?}",
                     project_config.remote_repo_url, project_local_path
                 );
-                ack_frontend_action(&response_channel);
+                push_current_process_status_to_frontend(
+                    &frontend_response_channel,
+                    CurrentProcess {
+                        process_type: ProcessType::GitClone,
+                        pid: None,
+                        project_id: project_id.clone(),
+                        status: ProcessStatus::TerminatedFailure,
+                    },
+                );
                 push_global_notification_to_frontend(
                     &app_handle,
                     &project_id,
@@ -182,9 +217,18 @@ pub async fn clone_code(
             let mut builder = RepoBuilder::new();
             builder.fetch_options(fetch_options);
             builder.branch(&project_config.working_branch);
+
             if let Err(e) = builder.clone(&project_config.remote_repo_url, &project_local_path) {
                 error!("Fail to clone GitHub repository: {e:?}");
-                ack_frontend_action(&response_channel);
+                push_current_process_status_to_frontend(
+                    &frontend_response_channel,
+                    CurrentProcess {
+                        process_type: ProcessType::GitClone,
+                        pid: None,
+                        project_id: project_id.clone(),
+                        status: ProcessStatus::TerminatedFailure,
+                    },
+                );
                 push_global_notification_to_frontend(
                     &app_handle,
                     &project_id,
@@ -205,28 +249,35 @@ pub async fn clone_code(
                     GlobalLogLevel::Error,
                 );
             };
+            push_global_notification_to_frontend(
+                &app_handle,
+                &project_id,
+                format!(
+                    "Successfully cloned data from GitHub: {} to {:?}",
+                    project_config.remote_repo_url, project_local_path
+                ),
+                "GitHub repository clone success.".to_string(),
+                GlobalNotificationLevel::Success,
+            );
+            push_global_log_to_frontend(
+                &app_handle,
+                &project_id,
+                format!(
+                    "Successfully cloned data from GitHub: {} to {:?}",
+                    project_config.remote_repo_url, project_local_path
+                ),
+                GlobalLogLevel::Info,
+            );
+            push_current_process_status_to_frontend(
+                &frontend_response_channel,
+                CurrentProcess {
+                    process_type: ProcessType::GitClone,
+                    pid: None,
+                    project_id: project_id.clone(),
+                    status: ProcessStatus::TerminatedSuccess,
+                },
+            );
         }
-        ack_frontend_action(&response_channel);
-
-        push_global_notification_to_frontend(
-            &app_handle,
-            &project_id,
-            format!(
-                "Successfully cloned data from GitHub: {} to {:?}",
-                project_config.remote_repo_url, project_local_path
-            ),
-            "GitHub repository clone success.".to_string(),
-            GlobalNotificationLevel::Success,
-        );
-        push_global_log_to_frontend(
-            &app_handle,
-            &project_id,
-            format!(
-                "Successfully cloned data from GitHub: {} to {:?}",
-                project_config.remote_repo_url, project_local_path
-            ),
-            GlobalLogLevel::Info,
-        );
     });
 
     Ok(())

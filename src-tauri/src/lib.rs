@@ -3,8 +3,8 @@ mod common;
 mod config;
 pub mod error;
 pub mod process;
+pub mod project;
 pub mod repo;
-pub mod runtime;
 
 use command::{
     exec_build_process, exec_run_process, get_github_runtime_detail, get_project_code,

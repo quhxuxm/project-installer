@@ -1,5 +1,6 @@
 use crate::command::message::{
-    GlobalLogEvent, GlobalLogLevel, GlobalNotificationEvent, GlobalNotificationLevel,
+    CurrentProcess, GlobalLogEvent, GlobalLogLevel, GlobalNotificationEvent,
+    GlobalNotificationLevel,
 };
 use crate::config::ProjectConfig;
 use derive_more::Display;
@@ -102,9 +103,12 @@ pub fn push_global_notification_to_frontend(
     };
 }
 
-pub fn ack_frontend_action(response_channel: &Channel<bool>) {
-    if let Err(e) = response_channel.send(true) {
-        error!("Fail ack to frontend action: {e:?}");
+pub fn push_current_process_status_to_frontend(
+    response_channel: &Channel<CurrentProcess>,
+    current_process: CurrentProcess,
+) {
+    if let Err(e) = response_channel.send(current_process) {
+        error!("Fail to send current process status to frontend: {e:?}");
     };
 }
 

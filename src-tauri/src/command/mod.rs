@@ -1,11 +1,13 @@
 pub mod message;
 
-use crate::command::message::ProjectRuntimeUpdate;
+use crate::command::message::{
+    CurrentProcess, GitHubRuntimeDetail, ProjectRuntimeDetail, ProjectRuntimeSummary,
+    ProjectRuntimeUpdate,
+};
 use crate::config::{save_tool_config, TOOL_CONFIG};
 use crate::error::Error;
-use crate::runtime::{
+use crate::project::{
     load_github_runtime_detail, load_project_runtime_detail, load_project_runtime_summaries,
-    GitHubRuntimeDetail, ProjectRuntimeDetail, ProjectRuntimeSummary,
 };
 use crate::{process, repo};
 use tauri::ipc::Channel;
@@ -54,19 +56,19 @@ pub async fn save_project(project_runtime_update: ProjectRuntimeUpdate) -> Resul
 pub async fn get_project_code(
     app_handle: AppHandle,
     project_runtime_update: ProjectRuntimeUpdate,
-    response_channel: Channel<bool>,
+    response_channel: Channel<CurrentProcess>,
 ) -> Result<(), Error> {
     info!("Receive project runtime update: {project_runtime_update:#?}");
     let project_id = project_runtime_update.project_id.clone();
     save_project(project_runtime_update).await?;
-    repo::clone_code(&app_handle, &project_id.into(), response_channel).await
+    repo::fetch_code(&app_handle, &project_id.into(), response_channel).await
 }
 
 #[tauri::command]
 pub async fn exec_build_process(
     app_handle: AppHandle,
     project_runtime_update: ProjectRuntimeUpdate,
-    response_channel: Channel<bool>,
+    response_channel: Channel<CurrentProcess>,
 ) -> Result<(), Error> {
     info!("Receive project runtime update: {project_runtime_update:#?}");
     let project_id = project_runtime_update.project_id.clone();
@@ -78,7 +80,7 @@ pub async fn exec_build_process(
 pub async fn exec_run_process(
     app_handle: AppHandle,
     project_runtime_update: ProjectRuntimeUpdate,
-    response_channel: Channel<bool>,
+    response_channel: Channel<CurrentProcess>,
 ) -> Result<(), Error> {
     info!("Receive project runtime update: {project_runtime_update:#?}");
     let project_id = project_runtime_update.project_id.clone();
