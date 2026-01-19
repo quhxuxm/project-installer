@@ -11,9 +11,9 @@ export type PropertyItem = {
 
 
 export type RunningCommandStatus = {
-    commandType: "build" | "run" | "debug" | "save" | "fetchCode";
+    commandType: "Build" | "Run" | "Debug" | "Save" | "FetchCode";
     projectId: string;
-    status: "running" | "terminatedSuccess" | "terminatedFailure";
+    status: "Running" | "TerminatedSuccess" | "TerminatedFailure";
 }
 
 export type ProjectRuntimeDetail = {

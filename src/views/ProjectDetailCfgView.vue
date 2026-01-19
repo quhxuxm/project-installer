@@ -84,6 +84,7 @@ let actionButtonDisable = ref(false);
 function getProjectCode() {
     let commandStatusChannel = new Channel<RunningCommandStatus>();
     commandStatusChannel.onmessage = (runningCommandStatus) => {
+        console.log(runningCommandStatus);
         actionButtonDisable.value = false;
         currentRunningCommandStatusRef.value = runningCommandStatus;
     };
@@ -122,13 +123,14 @@ function saveProject() {
 function execBuildProcess() {
     let commandStatusChannel = new Channel<RunningCommandStatus>();
     commandStatusChannel.onmessage = (runningCommandStatus) => {
+        console.log(runningCommandStatus.commandType);
         actionButtonDisable.value = false;
-        console.log(runningCommandStatus)
-        if (runningCommandStatus.status === "running") {
+        if (runningCommandStatus.status == "Running") {
             currentRunningCommandStatusRef.value = runningCommandStatus;
+            console.log("should be running: "+ currentRunningCommandStatusRef.value);
         } else {
-            console.log("Remove currentRunningCommandStatusVal")
             currentRunningCommandStatusRef.value = undefined;
+            console.log("should be undefined:" + currentRunningCommandStatusRef.value);
         }
     };
     actionButtonDisable.value = true;
@@ -146,7 +148,7 @@ function execRunProcess() {
     let commandStatusChannel = new Channel<RunningCommandStatus>();
     commandStatusChannel.onmessage = (runningCommandStatus) => {
         actionButtonDisable.value = false;
-        if (runningCommandStatus.status == "running") {
+        if (runningCommandStatus.status == "Running") {
             currentRunningCommandStatusRef.value = runningCommandStatus;
         } else {
             currentRunningCommandStatusRef.value = undefined;
@@ -215,10 +217,12 @@ const actionCommands = [
     </div>
     <div v-else class="h-full w-full flex flex-col gap-4 justify-self-center">
         <div class="text-2xl text-primary mb-4 uppercase flex flex-row gap-4 items-center">
-            {{ projectRuntimeDetailRef.name +currentRunningCommandStatusRef?.commandType}}
-            <Tag v-if="currentRunningCommandStatusRef?.commandType==='build'" value="Building"></Tag>
-            <Tag v-if="currentRunningCommandStatusRef?.commandType==='run'" value="Running"></Tag>
-            <Tag v-if="currentRunningCommandStatusRef?.commandType==='debug'" value="Debugging"></Tag>
+            {{ projectRuntimeDetailRef.name }}
+            <Tag v-if="currentRunningCommandStatusRef?.commandType==='Build'" value="Building"></Tag>
+            <Tag v-if="currentRunningCommandStatusRef?.commandType==='Run'" value="Running"></Tag>
+            <Tag v-if="currentRunningCommandStatusRef?.commandType==='Debug'" value="Debugging"></Tag>
+            <Tag v-if="currentRunningCommandStatusRef?.commandType==='FetchCode'" value="Fetching Code"></Tag>
+            <Tag v-if="currentRunningCommandStatusRef?.commandType==='Save'" value="Saving"></Tag>
         </div>
         <div class="flex flex-col gap-4">
             <Fieldset class="text-xl pb-3 pt-3" legend="REPOSITORY CONFIGURATION" toggleable>

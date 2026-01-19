@@ -9,7 +9,6 @@ let logAreaElement = useTemplateRef<HTMLDivElement>("log-area")
 
 listen(BACKEND_EVENT_GLOBAL_LOG, (event: Event<GlobalLogEvent>) => {
     if (logAreaElement.value){
-        console.log("Receive log: "+ event.payload.message);
         let logLineSpan = document.createElement("span")
         logLineSpan.className =  event.payload.level.toLowerCase();
         logLineSpan.textContent=event.payload.message;

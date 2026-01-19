@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import {onMounted, ref} from "vue";
-import {Splitter, SplitterPanel, Toast, useToast} from "primevue";
+import {Toast, useToast} from "primevue";
 import {invoke} from "@tauri-apps/api/core";
 import {BACKEND_EVENT_GLOBAL_NOTIFICATION, GET_PROJECT_RUNTIME_SUMMARIES_CMD} from "./common.ts";
 import {ProjectRuntimeSummary} from "./messages/project.ts";
@@ -29,7 +29,7 @@ listen(BACKEND_EVENT_GLOBAL_NOTIFICATION, (event: Event<GlobalNotificationEvent>
 
 <template>
     <div class="h-full w-full flex flex-col">
-        <div class="flex flex-row h-1/11 justify-start">
+        <div class="flex flex-row h-1/11 justify-start border-stone-100 border-b-2">
             <span class="inline-flex items-center gap-1 px-2 py-2 grow">
                 <span class="text-2xl font-black"> RGS<span
                     class="text-primary">PROJECTS</span></span>
@@ -66,7 +66,7 @@ listen(BACKEND_EVENT_GLOBAL_NOTIFICATION, (event: Event<GlobalNotificationEvent>
                 </li>
             </ul>
             <div class="w-4/5 h-full flex flex-col">
-                <div class="w-full h-7/10 overflow-y-auto pl-16 pr-16 pb-16">
+                <div class="w-full h-7/10 overflow-y-auto pt-16 pl-16 pr-16 pb-16">
                     <RouterView></RouterView>
                 </div>
                 <div class="w-full h-3/10 p-4 border-stone-100 border-t-2">

@@ -58,7 +58,6 @@ pub struct GitHubRuntimeDetail {
 }
 
 #[derive(Debug, Serialize, Deserialize, Copy, Clone)]
-#[serde(rename_all = "camelCase")]
 pub enum CommandType {
     Save,
     FetchCode,
@@ -68,17 +67,19 @@ pub enum CommandType {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 #[serde(tag = "status")]
 pub enum RunningCommandStatus {
+    #[serde(rename_all = "camelCase")]
     Running {
         command_type: CommandType,
         project_id: ProjectId,
     },
+    #[serde(rename_all = "camelCase")]
     TerminatedFailure {
         command_type: CommandType,
         project_id: ProjectId,
     },
+    #[serde(rename_all = "camelCase")]
     TerminatedSuccess {
         command_type: CommandType,
         project_id: ProjectId,
