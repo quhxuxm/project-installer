@@ -17,7 +17,6 @@ listen(BACKEND_EVENT_GLOBAL_LOG, (event: Event<GlobalLogEvent>) => {
             if (logAreaElement.value.firstChild){
                 logAreaElement.value.removeChild(logAreaElement.value.firstChild);
             }
-            
         }
         logAreaElement.value.scrollTop = logAreaElement.value?.scrollHeight;
     }

@@ -84,7 +84,6 @@ let actionButtonDisable = ref(false);
 function getProjectCode() {
     let commandStatusChannel = new Channel<RunningCommandStatus>();
     commandStatusChannel.onmessage = (runningCommandStatus) => {
-        console.log(runningCommandStatus);
         actionButtonDisable.value = false;
         currentRunningCommandStatusRef.value = runningCommandStatus;
     };
@@ -103,7 +102,11 @@ function saveProject() {
     let commandStatusChannel = new Channel<RunningCommandStatus>();
     commandStatusChannel.onmessage = (runningCommandStatus) => {
         actionButtonDisable.value = false;
-        currentRunningCommandStatusRef.value = runningCommandStatus;
+        if (runningCommandStatus.status == "Running") {
+            currentRunningCommandStatusRef.value = runningCommandStatus;
+        } else {
+            currentRunningCommandStatusRef.value = undefined;
+        }
     };
     actionButtonDisable.value = true;
     let projectRuntimeUpdate = generateProjectUpdate();
@@ -123,14 +126,11 @@ function saveProject() {
 function execBuildProcess() {
     let commandStatusChannel = new Channel<RunningCommandStatus>();
     commandStatusChannel.onmessage = (runningCommandStatus) => {
-        console.log(runningCommandStatus.commandType);
         actionButtonDisable.value = false;
         if (runningCommandStatus.status == "Running") {
             currentRunningCommandStatusRef.value = runningCommandStatus;
-            console.log("should be running: "+ currentRunningCommandStatusRef.value);
         } else {
             currentRunningCommandStatusRef.value = undefined;
-            console.log("should be undefined:" + currentRunningCommandStatusRef.value);
         }
     };
     actionButtonDisable.value = true;
