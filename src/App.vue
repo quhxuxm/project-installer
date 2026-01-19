@@ -37,7 +37,7 @@ listen(BACKEND_EVENT_GLOBAL_NOTIFICATION, (event: Event<GlobalNotificationEvent>
             <Toast></Toast>
         </div>
         <div class="flex flex-row h-10/11 justify-start grow">
-            <ul class="overflow-y-auto h-full w-1/5 border-stone-100 border-r-2" >
+            <ul class="overflow-y-auto h-full w-1/5 border-stone-100 border-r-2" style="min-width: 250px;" >
                 <li style="text-wrap: nowrap">
                     <span
                         class="inline-flex items-center gap-1 px-2 py-2 uppercase text-lg font-black">General</span>

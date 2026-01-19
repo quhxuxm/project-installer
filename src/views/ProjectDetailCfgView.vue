@@ -84,8 +84,12 @@ let actionButtonDisable = ref(false);
 function getProjectCode() {
     let commandStatusChannel = new Channel<RunningCommandStatus>();
     commandStatusChannel.onmessage = (runningCommandStatus) => {
-        actionButtonDisable.value = false;
-        currentRunningCommandStatusRef.value = runningCommandStatus;
+        if (runningCommandStatus.status == "Running") {
+            currentRunningCommandStatusRef.value = runningCommandStatus;
+        } else {
+            actionButtonDisable.value = false;
+            currentRunningCommandStatusRef.value = undefined;
+        }
     };
     actionButtonDisable.value = true;
     let projectRuntimeUpdate = generateProjectUpdate();
@@ -101,10 +105,10 @@ function getProjectCode() {
 function saveProject() {
     let commandStatusChannel = new Channel<RunningCommandStatus>();
     commandStatusChannel.onmessage = (runningCommandStatus) => {
-        actionButtonDisable.value = false;
         if (runningCommandStatus.status == "Running") {
             currentRunningCommandStatusRef.value = runningCommandStatus;
         } else {
+            actionButtonDisable.value = false;
             currentRunningCommandStatusRef.value = undefined;
         }
     };
@@ -130,6 +134,7 @@ function execBuildProcess() {
         if (runningCommandStatus.status == "Running") {
             currentRunningCommandStatusRef.value = runningCommandStatus;
         } else {
+            actionButtonDisable.value = false;
             currentRunningCommandStatusRef.value = undefined;
         }
     };
@@ -151,6 +156,7 @@ function execRunProcess() {
         if (runningCommandStatus.status == "Running") {
             currentRunningCommandStatusRef.value = runningCommandStatus;
         } else {
+            actionButtonDisable.value = false;
             currentRunningCommandStatusRef.value = undefined;
         }
     };

@@ -10,9 +10,9 @@ let logAreaElement = useTemplateRef<HTMLDivElement>("log-area")
 listen(BACKEND_EVENT_GLOBAL_LOG, (event: Event<GlobalLogEvent>) => {
     if (logAreaElement.value){
         let logLineSpan = document.createElement("span")
-        logLineSpan.className =  event.payload.level.toLowerCase();
-        logLineSpan.textContent=event.payload.message;
         logAreaElement.value.appendChild(logLineSpan);
+        logLineSpan.classList.add(...["global_log", "log_level_"+event.payload.level.toLowerCase()]);
+        logLineSpan.textContent=event.payload.message;
         while(logAreaElement.value.childNodes.length > 2000){
             if (logAreaElement.value.firstChild){
                 logAreaElement.value.removeChild(logAreaElement.value.firstChild);
@@ -24,33 +24,29 @@ listen(BACKEND_EVENT_GLOBAL_LOG, (event: Event<GlobalLogEvent>) => {
 
 </script>
 
-<style scoped>
-
-</style>
-
 <template>
     <div class="w-full h-full ">
         <div contenteditable ref="log-area" class="h-full w-full overflow-y-auto text-wrap p-2 text-sm resize-none flex flex-col justify-start border-none outline-none">
         </div>
     </div>
 </template>
-<style scoped>
-.log{
+<style>
+.global_log{
     width: 100%;
 }
-.info {
+.log_level_info {
     color: #333333; /* Blue for info */
 }
 
-.error {
+.log_level_error {
     color: #ff0000; /* Blue for info */
 }
 
-.warn {
+.log_level_warn {
     color: #ff8800; /* Blue for info */
 }
 
-.debug {
+.log_level_debug {
     color: #003cff;
 }
 </style>
