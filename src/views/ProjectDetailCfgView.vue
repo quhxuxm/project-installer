@@ -17,7 +17,7 @@ let currentRoute = useRoute();
 
 let loading = ref(true);
 
-let projectRuntimeDetail = ref<ProjectRuntimeDetail>({
+let projectRuntimeDetailRef = ref<ProjectRuntimeDetail>({
     customizedBuildCommand: undefined,
     customizedDebugCommand: undefined,
     customizedRunCommand: undefined,
@@ -36,22 +36,22 @@ let projectRuntimeDetail = ref<ProjectRuntimeDetail>({
     customizedProperties: [],
 });
 
-let buildCommandVal = ref();
-let runCommandVal = ref();
-let debugCommandVal = ref();
-let currentRunningCommandStatusVal = ref<RunningCommandStatus | undefined | null>();
+let buildCommandRef = ref();
+let runCommandRef = ref();
+let debugCommandRef = ref();
+let currentRunningCommandStatusRef = ref<RunningCommandStatus | undefined | null>();
 
 function switchProjectDetail(projectId: string) {
     loading.value = true;
     invoke<ProjectRuntimeDetail>(GET_PROJECT_RUNTIME_DETAIL_CMD, {projectId}).then((backendData) => {
-        projectRuntimeDetail.value = backendData;
-        buildCommandVal.value = backendData.customizedBuildCommand ?? backendData.buildCommand;
-        runCommandVal.value = backendData.customizedRunCommand ?? backendData.runCommand;
-        debugCommandVal.value = backendData.customizedDebugCommand ?? backendData.debugCommand;
+        projectRuntimeDetailRef.value = backendData;
+        buildCommandRef.value = backendData.customizedBuildCommand ?? backendData.buildCommand;
+        runCommandRef.value = backendData.customizedRunCommand ?? backendData.runCommand;
+        debugCommandRef.value = backendData.customizedDebugCommand ?? backendData.debugCommand;
         loading.value = false;
         actionButtonDisable.value = !!backendData.currentRunningCommandStatus;
-        currentRunningCommandStatusVal.value = backendData.currentRunningCommandStatus;
-        for (let prop of projectRuntimeDetail.value.customizedProperties) {
+        currentRunningCommandStatusRef.value = backendData.currentRunningCommandStatus;
+        for (let prop of projectRuntimeDetailRef.value.customizedProperties) {
             console.log(`Customized property - key: ${prop.key}, value: ${prop.value}`);
         }
     });
@@ -68,14 +68,14 @@ watch(
 
 function generateProjectUpdate(): ProjectRuntimeUpdate {
     return {
-        buildCommand: buildCommandVal.value,
-        debugCommand: debugCommandVal.value,
-        remoteRepoUrl: projectRuntimeDetail.value.remoteRepoUrl,
-        localRepoPath: projectRuntimeDetail.value.localRepoPath,
-        runCommand: runCommandVal.value,
+        buildCommand: buildCommandRef.value,
+        debugCommand: debugCommandRef.value,
+        remoteRepoUrl: projectRuntimeDetailRef.value.remoteRepoUrl,
+        localRepoPath: projectRuntimeDetailRef.value.localRepoPath,
+        runCommand: runCommandRef.value,
         projectId: currentRoute.params.id as string,
-        workingBranch: projectRuntimeDetail.value.workingBranch,
-        customizedProperties: projectRuntimeDetail.value.customizedProperties,
+        workingBranch: projectRuntimeDetailRef.value.workingBranch,
+        customizedProperties: projectRuntimeDetailRef.value.customizedProperties,
     };
 }
 
@@ -85,7 +85,7 @@ function getProjectCode() {
     let commandStatusChannel = new Channel<RunningCommandStatus>();
     commandStatusChannel.onmessage = (runningCommandStatus) => {
         actionButtonDisable.value = false;
-        currentRunningCommandStatusVal.value = runningCommandStatus;
+        currentRunningCommandStatusRef.value = runningCommandStatus;
     };
     actionButtonDisable.value = true;
     let projectRuntimeUpdate = generateProjectUpdate();
@@ -102,7 +102,7 @@ function saveProject() {
     let commandStatusChannel = new Channel<RunningCommandStatus>();
     commandStatusChannel.onmessage = (runningCommandStatus) => {
         actionButtonDisable.value = false;
-        currentRunningCommandStatusVal.value = runningCommandStatus;
+        currentRunningCommandStatusRef.value = runningCommandStatus;
     };
     actionButtonDisable.value = true;
     let projectRuntimeUpdate = generateProjectUpdate();
@@ -123,10 +123,12 @@ function execBuildProcess() {
     let commandStatusChannel = new Channel<RunningCommandStatus>();
     commandStatusChannel.onmessage = (runningCommandStatus) => {
         actionButtonDisable.value = false;
-        if (runningCommandStatus.status == "running") {
-            currentRunningCommandStatusVal.value = runningCommandStatus;
+        console.log(runningCommandStatus)
+        if (runningCommandStatus.status === "running") {
+            currentRunningCommandStatusRef.value = runningCommandStatus;
         } else {
-            currentRunningCommandStatusVal.value = undefined;
+            console.log("Remove currentRunningCommandStatusVal")
+            currentRunningCommandStatusRef.value = undefined;
         }
     };
     actionButtonDisable.value = true;
@@ -145,9 +147,9 @@ function execRunProcess() {
     commandStatusChannel.onmessage = (runningCommandStatus) => {
         actionButtonDisable.value = false;
         if (runningCommandStatus.status == "running") {
-            currentRunningCommandStatusVal.value = runningCommandStatus;
+            currentRunningCommandStatusRef.value = runningCommandStatus;
         } else {
-            currentRunningCommandStatusVal.value = undefined;
+            currentRunningCommandStatusRef.value = undefined;
         }
     };
     actionButtonDisable.value = true;
@@ -164,19 +166,18 @@ function execRunProcess() {
 function onCPEditComplete(event: DataTableCellEditCompleteEvent) {
     let {data, newValue, field} = event;
     data[field] = newValue;
-    console.log("Row data: " + data);
 }
 
 function deleteCPProperty(key: string) {
-    projectRuntimeDetail.value.customizedProperties = projectRuntimeDetail.value.customizedProperties.filter((prop) => prop.key !== key);
+    projectRuntimeDetailRef.value.customizedProperties = projectRuntimeDetailRef.value.customizedProperties.filter((prop) => prop.key !== key);
 }
 
 function addCPProperty() {
-    let emptyItem = projectRuntimeDetail.value.customizedProperties.find((prop) => prop.key.trim().length == 0);
+    let emptyItem = projectRuntimeDetailRef.value.customizedProperties.find((prop) => prop.key.trim().length == 0);
     if (emptyItem) {
         return;
     }
-    projectRuntimeDetail.value.customizedProperties.push({
+    projectRuntimeDetailRef.value.customizedProperties.push({
         key: "",
         value: "",
     });
@@ -214,43 +215,43 @@ const actionCommands = [
     </div>
     <div v-else class="h-full w-full flex flex-col gap-4 justify-self-center">
         <div class="text-2xl text-primary mb-4 uppercase flex flex-row gap-4 items-center">
-            {{ projectRuntimeDetail.name }}
-            <Tag v-if="currentRunningCommandStatusVal?.commandType==='build'" value="Building"></Tag>
-            <Tag v-if="currentRunningCommandStatusVal?.commandType==='run'" value="Running"></Tag>
-            <Tag v-if="currentRunningCommandStatusVal?.commandType==='debug'" value="Debugging"></Tag>
+            {{ projectRuntimeDetailRef.name +currentRunningCommandStatusRef?.commandType}}
+            <Tag v-if="currentRunningCommandStatusRef?.commandType==='build'" value="Building"></Tag>
+            <Tag v-if="currentRunningCommandStatusRef?.commandType==='run'" value="Running"></Tag>
+            <Tag v-if="currentRunningCommandStatusRef?.commandType==='debug'" value="Debugging"></Tag>
         </div>
         <div class="flex flex-col gap-4">
             <Fieldset class="text-xl pb-3 pt-3" legend="REPOSITORY CONFIGURATION" toggleable>
                 <div class="flex flex-col gap-4">
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="githubBranch">Branch</label>
-                        <Select id="githubBranch" v-model="projectRuntimeDetail.workingBranch"
-                                :options="projectRuntimeDetail.availableBranches"></Select>
+                        <Select id="githubBranch" v-model="projectRuntimeDetailRef.workingBranch"
+                                :options="projectRuntimeDetailRef.availableBranches"></Select>
                         <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
                             the GitHub branch.
                         </Message>
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="githubRepositoryUrl">Repository url</label>
-                        <InputText id="githubRepositoryUrl" v-model="projectRuntimeDetail.remoteRepoUrl" readonly/>
+                        <InputText id="githubRepositoryUrl" v-model="projectRuntimeDetailRef.remoteRepoUrl" readonly/>
                         <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
                             the GitHub repository url.
                         </Message>
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="localRepoPath">Local repository path</label>
-                        <InputText id="localRepoPath" v-model="projectRuntimeDetail.localRepoPath"/>
+                        <InputText id="localRepoPath" v-model="projectRuntimeDetailRef.localRepoPath"/>
                         <Message class="text-gray-500 text-sm flex flex-col gap-2" severity="secondary" size="small"
                                  variant="simple">
                             <span>Enter the local repository path.</span>
                             <span>The concrete local path will be:</span>
                             <span class="text-primary"> {{
-                                    projectRuntimeDetail.localRepoPath
-                                }}\{{ projectRuntimeDetail.workingBranch }} </span>
+                                    projectRuntimeDetailRef.localRepoPath
+                                }}\{{ projectRuntimeDetailRef.workingBranch }} </span>
                             <span>The customized properties directory path will be:</span>
                             <span class="text-primary"> {{
-                                    projectRuntimeDetail.localRepoPath
-                                }}\{{ projectRuntimeDetail.workingBranch }}-configuration </span>
+                                    projectRuntimeDetailRef.localRepoPath
+                                }}\{{ projectRuntimeDetailRef.workingBranch }}-configuration </span>
                         </Message>
                     </div>
                 </div>
@@ -259,21 +260,21 @@ const actionCommands = [
                 <div class="flex flex-col gap-4">
                     <div class="flex flex-col gap-2 mb-4">
                         <label class="text-lg" for="buildCommand">Build command</label>
-                        <InputText id="buildCommand" v-model="buildCommandVal"/>
+                        <InputText id="buildCommand" v-model="buildCommandRef"/>
                         <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
                             the build command.
                         </Message>
                     </div>
                     <div class="flex flex-col gap-2 mb-4">
                         <label class="text-lg" for="runCommand">Run command</label>
-                        <InputText id="runCommand" v-model="runCommandVal"/>
+                        <InputText id="runCommand" v-model="runCommandRef"/>
                         <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
                             the run command.
                         </Message>
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="debugCommand">Debug command</label>
-                        <InputText id="debugCommand" v-model="debugCommandVal"/>
+                        <InputText id="debugCommand" v-model="debugCommandRef"/>
                         <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
                             the debug command.
                         </Message>
@@ -285,7 +286,7 @@ const actionCommands = [
                 <div class="flex flex-col gap-4">
                     <div class="flex flex-col gap-2 mb-4">
                         <DataTable
-                            :value="projectRuntimeDetail.customizedProperties"
+                            :value="projectRuntimeDetailRef.customizedProperties"
                             class="w-full"
                             edit-mode="cell"
                             scroll-height="400px"
