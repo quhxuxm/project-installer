@@ -64,6 +64,7 @@ pub enum CommandType {
     Build,
     Run,
     Debug,
+    Stop,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

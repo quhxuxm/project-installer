@@ -18,16 +18,16 @@ use tauri_plugin_shell::process::{CommandChild, CommandEvent};
 use tauri_plugin_shell::ShellExt;
 use tokio::sync::mpsc::Sender;
 use tokio::sync::Mutex;
-use tracing::{error, info};
+use tracing::{error, info, trace};
 
-pub type ProjectChildProcessRepo = LazyLock<Arc<Mutex<HashMap<ProjectId, Arc<ChildProcess>>>>>;
+pub type ProjectChildProcessRepo = LazyLock<Arc<Mutex<HashMap<ProjectId, ChildProcess>>>>;
 
 pub static PROJECT_CHILD_PROCESS_REPO: ProjectChildProcessRepo = LazyLock::new(Default::default);
 
 pub enum ChildProcess {
-    Build(Arc<CommandChild>),
-    Run(Arc<CommandChild>),
-    Debug(Arc<CommandChild>),
+    Build(CommandChild),
+    Run(CommandChild),
+    Debug(CommandChild),
 }
 
 impl Deref for ChildProcess {
@@ -49,7 +49,7 @@ async fn spawn_child_program(
     project_config: &ProjectConfig,
     command_type: CommandType,
     child_process_status_tx: Sender<RunningCommandStatus>,
-) -> Result<Arc<CommandChild>, Error> {
+) -> Result<CommandChild, Error> {
     let shell = app_handle.shell();
     let (mut receiver, child) = shell
         .command("cmd")
@@ -60,7 +60,7 @@ async fn spawn_child_program(
                 .join(&project_config.working_branch),
         )
         .spawn()?;
-    let child = Arc::new(child);
+
     let child_process_id = child.pid();
     push_global_log_to_frontend(
         app_handle,
@@ -102,7 +102,7 @@ async fn spawn_child_program(
                         };
                         let level = parse_global_log_level(&line);
                         push_global_log_to_frontend(&app_handle, &project_id, line.clone(), level);
-                        info!("[CHILD OUTPUT] {}", line);
+                        trace!("[CHILD OUTPUT] {}", line);
                     }
                     CommandEvent::Error(error) => {
                         push_global_log_to_frontend(
@@ -190,7 +190,64 @@ pub async fn spawn_build_process(
     PROJECT_CHILD_PROCESS_REPO
         .lock()
         .await
-        .insert(project_id.clone(), Arc::new(ChildProcess::Build(child)));
+        .insert(project_id.clone(), ChildProcess::Build(child));
+    Ok(())
+}
+
+pub async fn spawn_stop_process(
+    app_handle: &AppHandle,
+    project_id: &ProjectId,
+    child_process_status_tx: Sender<RunningCommandStatus>,
+) -> Result<(), Error> {
+    let mut project_child_process_repo = PROJECT_CHILD_PROCESS_REPO.lock().await;
+    let mut project_child_process = project_child_process_repo.remove(project_id);
+    if let Some(project_child_process) = project_child_process.take() {
+        match project_child_process {
+            ChildProcess::Build(command_child) => {
+                info!("Begin to stop child process (building) for project: {project_id}");
+                command_child.kill()?;
+                info!("Stop child process (building) for project: {project_id}");
+                push_global_log_to_frontend(
+                    app_handle,
+                    project_id,
+                    format!("Child process (building) for project [{project_id:?}] is killed.",),
+                    GlobalLogLevel::Info,
+                );
+            }
+            ChildProcess::Run(command_child) => {
+                info!("Begin to stop child process (running) for project: {project_id}");
+                command_child.kill()?;
+                info!("Stop child process (running) for project: {project_id}");
+                push_global_log_to_frontend(
+                    app_handle,
+                    project_id,
+                    format!("Child process (running) for project [{project_id:?}] is killed.",),
+                    GlobalLogLevel::Info,
+                );
+            }
+            ChildProcess::Debug(command_child) => {
+                info!("Begin to stop child process (debugging) for project: {project_id}");
+                command_child.kill()?;
+                info!("Stop child process (debugging) for project: {project_id}");
+                push_global_log_to_frontend(
+                    app_handle,
+                    project_id,
+                    format!("Child process (debugging) for project [{project_id:?}] is killed.",),
+                    GlobalLogLevel::Info,
+                );
+            }
+        }
+    }
+    if let Err(e) = child_process_status_tx
+        .send(RunningCommandStatus::TerminatedSuccess {
+            command_type: CommandType::Stop,
+            project_id: project_id.clone(),
+        })
+        .await
+    {
+        error!("Fail to send child process terminated successfully: {e:?}");
+    }
+
     Ok(())
 }
 
@@ -226,6 +283,6 @@ pub async fn spawn_run_process(
     PROJECT_CHILD_PROCESS_REPO
         .lock()
         .await
-        .insert(project_id.clone(), Arc::new(ChildProcess::Run(child)));
+        .insert(project_id.clone(), ChildProcess::Run(child));
     Ok(())
 }

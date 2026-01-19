@@ -7,8 +7,8 @@ pub mod project;
 pub mod repo;
 
 use command::{
-    exec_build_process, exec_run_process, get_github_runtime_detail, get_project_code,
-    get_project_runtime_detail, get_project_runtime_summaries, save_project,
+    exec_build_process, exec_run_process, exec_stop_process, get_github_runtime_detail,
+    get_project_code, get_project_runtime_detail, get_project_runtime_summaries, save_project,
 };
 use tauri::async_runtime;
 use tokio::runtime::Builder;
@@ -23,7 +23,9 @@ pub fn run() {
         .enable_all()
         .build()
         .expect("Fail to create async runtime");
-    tracing_subscriber::fmt().with_max_level(LevelFilter::DEBUG).init();
+    tracing_subscriber::fmt()
+        .with_max_level(LevelFilter::DEBUG)
+        .init();
     async_runtime::set(runtime.handle().clone());
 
     tauri::Builder::default()
@@ -36,7 +38,8 @@ pub fn run() {
             get_project_code,
             save_project,
             exec_build_process,
-            exec_run_process
+            exec_run_process,
+            exec_stop_process
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

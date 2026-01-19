@@ -53,7 +53,7 @@ pub async fn load_project_runtime_detail(
         .await
         .get(project_id)
         .map(|process| {
-            let (command_type, pid) = match process.as_ref() {
+            let (command_type, pid) = match process {
                 ChildProcess::Build(child) => (CommandType::Build, child.pid()),
                 ChildProcess::Run(child) => (CommandType::Run, child.pid()),
                 ChildProcess::Debug(child) => (CommandType::Debug, child.pid()),

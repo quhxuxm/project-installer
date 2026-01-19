@@ -6,6 +6,7 @@ import Fieldset from "primevue/fieldset";
 import {
     EXEC_BUILD_PROCESS,
     EXEC_RUN_PROCESS,
+    EXEC_STOP_PROCESS,
     GET_PROJECT_CODE_CMD,
     GET_PROJECT_RUNTIME_DETAIL_CMD,
     SAVE_PROJECT_CMD
@@ -171,6 +172,24 @@ function execRunProcess() {
     });
 }
 
+function execStopProcess() {
+    let commandStatusChannel = new Channel<RunningCommandStatus>();
+    commandStatusChannel.onmessage = (runningCommandStatus) => {
+        if (runningCommandStatus.status == "Running") {
+            currentRunningCommandStatusRef.value = runningCommandStatus;
+        } else {
+            currentRunningCommandStatusRef.value = undefined;
+        }
+    };
+    let projectRuntimeUpdate = generateProjectUpdate();
+    invoke(EXEC_STOP_PROCESS, {
+        projectRuntimeUpdate,
+        commandStatusChannel,
+    }).catch((e) => {
+        console.log("Error happen when get project code: " + e);
+    });
+}
+
 function onCPEditComplete(event: DataTableCellEditCompleteEvent) {
     let {data, newValue, field} = event;
     data[field] = newValue;
@@ -332,7 +351,7 @@ const actionCommands = [
                 </div>
             </Fieldset>
             <div class="flex flex-row gap-4 m-4 mb-8 justify-end">
-                <SplitButton
+                <!-- <SplitButton
                     :disabled="actionButtonDisable"
                     :model="actionCommands"
                     class="uppercase"
@@ -340,7 +359,19 @@ const actionCommands = [
                     icon="pi pi-check"
                     label="SAVE"
                     @click="saveProject"
-                ></SplitButton>
+                    ></SplitButton> -->
+                
+                    <SplitButton
+                        :disabled="actionButtonDisable"
+                        :model="actionCommands"
+                        class="uppercase"
+                        dropdownIcon="pi pi-cog"
+                        icon="pi pi-check"
+                        label="SAVE"
+                        @click="saveProject">
+                    </SplitButton>
+                    
+                    <Button @click="execStopProcess" class="uppercase bg-red-500" icon="pi pi-stop" severity="danger" label="STOP"></Button>
             </div>
         </div>
     </div>

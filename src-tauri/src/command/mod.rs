@@ -257,3 +257,39 @@ pub async fn exec_run_process(
         }
     });
 }
+
+#[tauri::command]
+pub async fn exec_stop_process(
+    app_handle: AppHandle,
+    project_runtime_update: ProjectRuntimeUpdate,
+    command_status_channel: Channel<RunningCommandStatus>,
+) {
+    debug!("Receive project runtime update for run project: {project_runtime_update:#?}");
+    let project_id = project_runtime_update.project_id.clone();
+    let mut tool_config = TOOL_CONFIG.write().await;
+    if let Err(e) =
+        save_project_runtime_update(&mut tool_config, project_runtime_update, CommandType::Run)
+            .await
+    {
+        push_current_process_status_to_frontend(&command_status_channel, e);
+    };
+    let (child_process_status_tx, mut child_process_status_rs) = channel(1024);
+    if let Err(e) =
+        process::spawn_stop_process(&app_handle, &project_id, child_process_status_tx).await
+    {
+        error!("Failed to execute stop process: {e}");
+        push_current_process_status_to_frontend(
+            &command_status_channel,
+            RunningCommandStatus::TerminatedFailure {
+                command_type: CommandType::Stop,
+                project_id: project_id.clone(),
+            },
+        );
+        return;
+    }
+    tokio::spawn(async move {
+        while let Some(current_process) = child_process_status_rs.recv().await {
+            push_current_process_status_to_frontend(&command_status_channel, current_process);
+        }
+    });
+}
