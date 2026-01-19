@@ -59,31 +59,33 @@ pub struct GitHubRuntimeDetail {
 
 #[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 #[serde(rename_all = "camelCase")]
-pub enum ProcessType {
-    GitClone,
+pub enum CommandType {
+    Save,
+    FetchCode,
     Build,
     Run,
     Debug,
-    Stop,
 }
 
-#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
-#[serde(rename_all = "camelCase")]
-pub enum ProcessStatus {
-    Running,
-    TerminatedSuccess,
-    TerminatedFailure,
-}
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CurrentProcess {
-    pub process_type: ProcessType,
-    pub pid: Option<u32>,
-    pub project_id: ProjectId,
-    pub status: ProcessStatus,
+#[serde(tag = "status")]
+pub enum RunningCommandStatus {
+    Running {
+        command_type: CommandType,
+        project_id: ProjectId,
+    },
+    TerminatedFailure {
+        command_type: CommandType,
+        project_id: ProjectId,
+    },
+    TerminatedSuccess {
+        command_type: CommandType,
+        project_id: ProjectId,
+    },
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, Ord, Clone)]
+#[derive(Debug, Serialize, Deserialize, Eq, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct PropertyItem {
     pub key: String,
@@ -98,7 +100,13 @@ impl PartialEq<Self> for PropertyItem {
 
 impl PartialOrd for PropertyItem {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.key.partial_cmp(&other.key)
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for PropertyItem {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.key.cmp(&other.key)
     }
 }
 
@@ -110,7 +118,7 @@ pub struct ProjectRuntimeDetail {
     pub working_branch: String,
     pub remote_repo_url: String,
     pub local_repo_path: PathBuf,
-    pub current_process: Option<CurrentProcess>,
+    pub current_running_command_status: Option<RunningCommandStatus>,
     pub available_branches: Vec<String>,
     pub build_command: Option<String>,
     pub run_command: Option<String>,

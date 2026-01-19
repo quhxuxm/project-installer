@@ -12,7 +12,7 @@ use command::{
 };
 use tauri::async_runtime;
 use tokio::runtime::Builder;
-
+use tracing::level_filters::LevelFilter;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -23,8 +23,9 @@ pub fn run() {
         .enable_all()
         .build()
         .expect("Fail to create async runtime");
-    tracing_subscriber::fmt().init();
+    tracing_subscriber::fmt().with_max_level(LevelFilter::DEBUG).init();
     async_runtime::set(runtime.handle().clone());
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())

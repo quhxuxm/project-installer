@@ -21,6 +21,7 @@ pub struct ProjectConfig {
     pub description: String,
     pub remote_repo_url: String,
     pub working_branch: String,
+    pub available_branches: Vec<String>,
     pub local_repo_path: PathBuf,
     pub build_command: Option<String>,
     pub customized_build_command: Option<String>,

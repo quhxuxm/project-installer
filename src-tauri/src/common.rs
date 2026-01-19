@@ -1,6 +1,6 @@
 use crate::command::message::{
-    CurrentProcess, GlobalLogEvent, GlobalLogLevel, GlobalNotificationEvent,
-    GlobalNotificationLevel,
+    GlobalLogEvent, GlobalLogLevel, GlobalNotificationEvent, GlobalNotificationLevel,
+    RunningCommandStatus,
 };
 use crate::config::ProjectConfig;
 use derive_more::Display;
@@ -52,16 +52,12 @@ impl From<&str> for ProjectId {
 pub fn parse_global_log_level(line: &str) -> GlobalLogLevel {
     if line.to_uppercase().contains("[ERROR]") {
         GlobalLogLevel::Error
+    } else if line.to_uppercase().contains("[DEBUG]") {
+        GlobalLogLevel::Debug
+    } else if line.to_uppercase().contains("[WARN]") {
+        GlobalLogLevel::Warn
     } else {
-        if line.to_uppercase().contains("[DEBUG]") {
-            GlobalLogLevel::Debug
-        } else {
-            if line.to_uppercase().contains("[WARN]") {
-                GlobalLogLevel::Warn
-            } else {
-                GlobalLogLevel::Info
-            }
-        }
+        GlobalLogLevel::Info
     }
 }
 
@@ -104,8 +100,8 @@ pub fn push_global_notification_to_frontend(
 }
 
 pub fn push_current_process_status_to_frontend(
-    response_channel: &Channel<CurrentProcess>,
-    current_process: CurrentProcess,
+    response_channel: &Channel<RunningCommandStatus>,
+    current_process: RunningCommandStatus,
 ) {
     if let Err(e) = response_channel.send(current_process) {
         error!("Fail to send current process status to frontend: {e:?}");

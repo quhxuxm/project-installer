@@ -1,12 +1,11 @@
 use crate::command::message::{
-    CurrentProcess, GlobalLogLevel, GlobalNotificationLevel, ProcessStatus, ProcessType,
+    CommandType, GlobalLogLevel, GlobalNotificationLevel, RunningCommandStatus,
 };
 use crate::common::{
-    generate_customized_properties_dir, parse_global_log_level,
-    push_current_process_status_to_frontend, push_global_log_to_frontend,
+    generate_customized_properties_dir, parse_global_log_level, push_global_log_to_frontend,
     push_global_notification_to_frontend, ProjectId,
 };
-use crate::config::{ProjectConfig, TOOL_CONFIG};
+use crate::config::ProjectConfig;
 use crate::error::Error;
 use std::collections::HashMap;
 
@@ -14,21 +13,21 @@ use java_properties::write;
 use std::io::BufWriter;
 use std::ops::Deref;
 use std::sync::{Arc, LazyLock};
-use tauri::ipc::Channel;
 use tauri::AppHandle;
 use tauri_plugin_shell::process::{CommandChild, CommandEvent};
 use tauri_plugin_shell::ShellExt;
+use tokio::sync::mpsc::Sender;
 use tokio::sync::Mutex;
 use tracing::{error, info};
 
-pub static PROJECT_CHILD_PROCESS_REPO: LazyLock<Arc<Mutex<HashMap<ProjectId, Arc<ChildProcess>>>>> =
-    LazyLock::new(|| Default::default());
+pub type ProjectChildProcessRepo = LazyLock<Arc<Mutex<HashMap<ProjectId, Arc<ChildProcess>>>>>;
+
+pub static PROJECT_CHILD_PROCESS_REPO: ProjectChildProcessRepo = LazyLock::new(Default::default);
 
 pub enum ChildProcess {
     Build(Arc<CommandChild>),
     Run(Arc<CommandChild>),
     Debug(Arc<CommandChild>),
-    Stop(Arc<CommandChild>),
 }
 
 impl Deref for ChildProcess {
@@ -39,18 +38,17 @@ impl Deref for ChildProcess {
             ChildProcess::Build(child) => child,
             ChildProcess::Run(child) => child,
             ChildProcess::Debug(child) => child,
-            ChildProcess::Stop(child) => child,
         }
     }
 }
 
-async fn execute_program(
+async fn spawn_child_program(
     app_handle: &AppHandle,
     project_id: &ProjectId,
     command: &str,
     project_config: &ProjectConfig,
-    frontend_response_channel: Channel<CurrentProcess>,
-    process_type: ProcessType,
+    command_type: CommandType,
+    child_process_status_tx: Sender<RunningCommandStatus>,
 ) -> Result<Arc<CommandChild>, Error> {
     let shell = app_handle.shell();
     let (mut receiver, child) = shell
@@ -65,15 +63,16 @@ async fn execute_program(
     let child = Arc::new(child);
     let child_process_id = child.pid();
     push_global_log_to_frontend(
-        &app_handle,
-        &project_id,
+        app_handle,
+        project_id,
         format!("Child process for [{command}] spawned, process id: {child_process_id}",),
         GlobalLogLevel::Info,
     );
     {
         let project_id = project_id.clone();
         let app_handle = app_handle.clone();
-        let frontend_response_channel_clone = frontend_response_channel.clone();
+        let child_process_status_tx = child_process_status_tx.clone();
+
         tokio::spawn(async move {
             while let Some(command_event) = receiver.recv().await {
                 match command_event {
@@ -115,23 +114,19 @@ async fn execute_program(
                     }
                     CommandEvent::Terminated(terminate) => {
                         if let Some(0) = terminate.code {
-                            push_global_notification_to_frontend(&app_handle, &project_id,
-                                                                 format!(
-                                                                     "Project {project_id} sub process {child_process_id} terminated with code: {:?}, signal: {:?}",
-                                                                     terminate.code, terminate.signal
-                                                                 ),
-                                                                 format!("Project {project_id} build process success."),
-                                                                 GlobalNotificationLevel::Success);
-
-                            push_current_process_status_to_frontend(
-                                &frontend_response_channel_clone,
-                                CurrentProcess {
-                                    process_type,
-                                    pid: Some(child_process_id),
+                            push_global_notification_to_frontend(&app_handle, &project_id, format!(
+                                "Project {project_id} sub process {child_process_id} terminated with code: {:?}, signal: {:?}",
+                                terminate.code, terminate.signal
+                            ),format!("Project {project_id} build process success."),GlobalNotificationLevel::Success);
+                            if let Err(e) = child_process_status_tx
+                                .send(RunningCommandStatus::TerminatedSuccess {
+                                    command_type,
                                     project_id: project_id.clone(),
-                                    status: ProcessStatus::TerminatedSuccess,
-                                },
-                            );
+                                })
+                                .await
+                            {
+                                error!("Fail to send child process terminated successfully: {e:?}");
+                            }
                         } else {
                             push_global_notification_to_frontend(
                                 &app_handle,
@@ -142,15 +137,15 @@ async fn execute_program(
                                 ),
                                 format!("Project {project_id} build process fail."),
                                 GlobalNotificationLevel::Error);
-                            push_current_process_status_to_frontend(
-                                &frontend_response_channel_clone,
-                                CurrentProcess {
-                                    process_type,
-                                    pid: Some(child_process_id),
+                            if let Err(e) = child_process_status_tx
+                                .send(RunningCommandStatus::TerminatedFailure {
+                                    command_type,
                                     project_id: project_id.clone(),
-                                    status: ProcessStatus::TerminatedFailure,
-                                },
-                            );
+                                })
+                                .await
+                            {
+                                error!("Fail to send child process terminated failure: {e:?}");
+                            }
                         }
                         PROJECT_CHILD_PROCESS_REPO.lock().await.remove(&project_id);
                     }
@@ -161,41 +156,35 @@ async fn execute_program(
             }
         });
     }
-
-    push_current_process_status_to_frontend(
-        &frontend_response_channel,
-        CurrentProcess {
-            process_type,
-            pid: Some(child_process_id),
+    if let Err(e) = child_process_status_tx
+        .send(RunningCommandStatus::Running {
+            command_type,
             project_id: project_id.clone(),
-            status: ProcessStatus::Running,
-        },
-    );
-
+        })
+        .await
+    {
+        error!("Fail to send child process running failure: {e:?}");
+    };
     Ok(child)
 }
 
-pub async fn execute_build_process(
+pub async fn spawn_build_process(
     app_handle: &AppHandle,
     project_id: &ProjectId,
-    response_channel: Channel<CurrentProcess>,
+    project_config: &ProjectConfig,
+    child_process_status_tx: Sender<RunningCommandStatus>,
 ) -> Result<(), Error> {
-    let tool_config = TOOL_CONFIG.read().await;
-    let projects_config = &tool_config.projects;
-    let project_config = projects_config
-        .get(project_id)
-        .ok_or(Error::ProjectNotFound(project_id.clone()))?;
     let build_command = project_config
         .customized_build_command
         .as_deref()
         .ok_or(Error::BuildCommandNotFound(project_id.clone()))?;
-    let child = execute_program(
+    let child = spawn_child_program(
         app_handle,
         project_id,
         build_command,
-        &project_config,
-        response_channel,
-        ProcessType::Build,
+        project_config,
+        CommandType::Build,
+        child_process_status_tx,
     )
     .await?;
     PROJECT_CHILD_PROCESS_REPO
@@ -205,16 +194,12 @@ pub async fn execute_build_process(
     Ok(())
 }
 
-pub async fn execute_run_process(
+pub async fn spawn_run_process(
     app_handle: &AppHandle,
     project_id: &ProjectId,
-    response_channel: Channel<CurrentProcess>,
+    project_config: &ProjectConfig,
+    child_process_status_tx: Sender<RunningCommandStatus>,
 ) -> Result<(), Error> {
-    let tool_config = TOOL_CONFIG.read().await;
-    let projects_config = &tool_config.projects;
-    let project_config = projects_config
-        .get(project_id)
-        .ok_or(Error::ProjectNotFound(project_id.clone()))?;
     let customized_cfg_dir = generate_customized_properties_dir(project_config);
     if !customized_cfg_dir.exists() {
         std::fs::create_dir_all(&customized_cfg_dir)?;
@@ -229,13 +214,13 @@ pub async fn execute_run_process(
         .customized_run_command
         .as_deref()
         .ok_or(Error::RunCommandNotFound(project_id.clone()))?;
-    let child = execute_program(
+    let child = spawn_child_program(
         app_handle,
         project_id,
         run_command,
-        &project_config,
-        response_channel,
-        ProcessType::Run,
+        project_config,
+        CommandType::Run,
+        child_process_status_tx,
     )
     .await?;
     PROJECT_CHILD_PROCESS_REPO

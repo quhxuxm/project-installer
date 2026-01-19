@@ -11,7 +11,7 @@ import {
     SAVE_PROJECT_CMD
 } from "../common.ts";
 import {Channel, invoke} from "@tauri-apps/api/core";
-import {CurrentProcess, ProjectRuntimeDetail, ProjectRuntimeUpdate} from "../messages/project.ts";
+import {RunningCommandStatus,ProjectRuntimeDetail, ProjectRuntimeUpdate} from "../messages/project.ts";
 
 let currentRoute = useRoute();
 
@@ -27,7 +27,7 @@ let projectRuntimeDetail = ref<ProjectRuntimeDetail>({
     workingBranch: "",
     remoteRepoUrl: "",
     localRepoPath: "",
-    currentProcess: undefined,
+    currentRunningCommandStatus: undefined,
     availableBranches: [],
     buildCommand: undefined,
     runCommand: undefined,
@@ -39,7 +39,7 @@ let projectRuntimeDetail = ref<ProjectRuntimeDetail>({
 let buildCommandVal = ref();
 let runCommandVal = ref();
 let debugCommandVal = ref();
-let currentProcessVal = ref<CurrentProcess | undefined | null>();
+let currentRunningCommandStatusVal = ref<RunningCommandStatus | undefined | null>();
 
 function switchProjectDetail(projectId: string) {
     loading.value = true;
@@ -49,8 +49,8 @@ function switchProjectDetail(projectId: string) {
         runCommandVal.value = backendData.customizedRunCommand ?? backendData.runCommand;
         debugCommandVal.value = backendData.customizedDebugCommand ?? backendData.debugCommand;
         loading.value = false;
-        actionButtonDisable.value = !!backendData.currentProcess;
-        currentProcessVal.value = backendData.currentProcess;
+        actionButtonDisable.value = !!backendData.currentRunningCommandStatus;
+        currentRunningCommandStatusVal.value = backendData.currentRunningCommandStatus;
         for (let prop of projectRuntimeDetail.value.customizedProperties) {
             console.log(`Customized property - key: ${prop.key}, value: ${prop.value}`);
         }
@@ -82,16 +82,16 @@ function generateProjectUpdate(): ProjectRuntimeUpdate {
 let actionButtonDisable = ref(false);
 
 function getProjectCode() {
-    let responseChannel = new Channel<CurrentProcess>();
-    responseChannel.onmessage = (currentProcess) => {
+    let commandStatusChannel = new Channel<RunningCommandStatus>();
+    commandStatusChannel.onmessage = (runningCommandStatus) => {
         actionButtonDisable.value = false;
-        currentProcessVal.value = currentProcess;
+        currentRunningCommandStatusVal.value = runningCommandStatus;
     };
     actionButtonDisable.value = true;
     let projectRuntimeUpdate = generateProjectUpdate();
     invoke(GET_PROJECT_CODE_CMD, {
         projectRuntimeUpdate,
-        responseChannel,
+        commandStatusChannel,
     }).catch((e) => {
         actionButtonDisable.value = false;
         console.log("Error happen when get project code: " + e);
@@ -99,10 +99,16 @@ function getProjectCode() {
 }
 
 function saveProject() {
+    let commandStatusChannel = new Channel<RunningCommandStatus>();
+    commandStatusChannel.onmessage = (runningCommandStatus) => {
+        actionButtonDisable.value = false;
+        currentRunningCommandStatusVal.value = runningCommandStatus;
+    };
     actionButtonDisable.value = true;
     let projectRuntimeUpdate = generateProjectUpdate();
     invoke(SAVE_PROJECT_CMD, {
         projectRuntimeUpdate,
+        commandStatusChannel
     })
         .then(() => {
             actionButtonDisable.value = false;
@@ -114,20 +120,20 @@ function saveProject() {
 }
 
 function execBuildProcess() {
-    let responseChannel = new Channel<CurrentProcess>();
-    responseChannel.onmessage = (currentProcess) => {
+    let commandStatusChannel = new Channel<RunningCommandStatus>();
+    commandStatusChannel.onmessage = (runningCommandStatus) => {
         actionButtonDisable.value = false;
-        if (currentProcess.status == "running") {
-            currentProcessVal.value = currentProcess;
+        if (runningCommandStatus.status == "running") {
+            currentRunningCommandStatusVal.value = runningCommandStatus;
         } else {
-            currentProcessVal.value = undefined;
+            currentRunningCommandStatusVal.value = undefined;
         }
     };
     actionButtonDisable.value = true;
     let projectRuntimeUpdate = generateProjectUpdate();
     invoke(EXEC_BUILD_PROCESS, {
         projectRuntimeUpdate,
-        responseChannel,
+        commandStatusChannel,
     }).catch((e) => {
         actionButtonDisable.value = false;
         console.log("Error happen when get project code: " + e);
@@ -135,20 +141,20 @@ function execBuildProcess() {
 }
 
 function execRunProcess() {
-    let responseChannel = new Channel<CurrentProcess>();
-    responseChannel.onmessage = (currentProcess) => {
+    let commandStatusChannel = new Channel<RunningCommandStatus>();
+    commandStatusChannel.onmessage = (runningCommandStatus) => {
         actionButtonDisable.value = false;
-        if (currentProcess.status == "running") {
-            currentProcessVal.value = currentProcess;
+        if (runningCommandStatus.status == "running") {
+            currentRunningCommandStatusVal.value = runningCommandStatus;
         } else {
-            currentProcessVal.value = undefined;
+            currentRunningCommandStatusVal.value = undefined;
         }
     };
     actionButtonDisable.value = true;
     let projectRuntimeUpdate = generateProjectUpdate();
     invoke(EXEC_RUN_PROCESS, {
         projectRuntimeUpdate,
-        responseChannel,
+        commandStatusChannel,
     }).catch((e) => {
         actionButtonDisable.value = false;
         console.log("Error happen when get project code: " + e);
@@ -209,10 +215,9 @@ const actionCommands = [
     <div v-else class="h-full w-full flex flex-col gap-4 justify-self-center">
         <div class="text-2xl text-primary mb-4 uppercase flex flex-row gap-4 items-center">
             {{ projectRuntimeDetail.name }}
-            <Tag v-if="currentProcessVal?.processType==='build'" value="Building"></Tag>
-            <Tag v-if="currentProcessVal?.processType==='run'" value="Running"></Tag>
-            <Tag v-if="currentProcessVal?.processType==='debug'" value="Debugging"></Tag>
-            <Tag v-if="currentProcessVal?.processType==='stop'" value="Stopping"></Tag>
+            <Tag v-if="currentRunningCommandStatusVal?.commandType==='build'" value="Building"></Tag>
+            <Tag v-if="currentRunningCommandStatusVal?.commandType==='run'" value="Running"></Tag>
+            <Tag v-if="currentRunningCommandStatusVal?.commandType==='debug'" value="Debugging"></Tag>
         </div>
         <div class="flex flex-col gap-4">
             <Fieldset class="text-xl pb-3 pt-3" legend="REPOSITORY CONFIGURATION" toggleable>

@@ -1,9 +1,10 @@
 use crate::command::message::{
-    CurrentProcess, GitHubRuntimeDetail, ProcessStatus, ProcessType, ProjectRuntimeDetail,
-    ProjectRuntimeSummary, PropertyItem,
+    CommandType, GitHubRuntimeDetail, ProjectRuntimeDetail, ProjectRuntimeSummary, PropertyItem,
+    RunningCommandStatus,
 };
 use crate::process::{ChildProcess, PROJECT_CHILD_PROCESS_REPO};
 use crate::{common::ProjectId, config::TOOL_CONFIG, error::Error, repo};
+use tracing::info;
 
 pub async fn load_github_runtime_detail() -> Result<GitHubRuntimeDetail, Error> {
     let tool_config = TOOL_CONFIG.read().await;
@@ -37,7 +38,7 @@ pub async fn load_project_runtime_detail(
         .projects
         .get(project_id)
         .ok_or(Error::ProjectNotFound(project_id.clone()))?;
-    let available_branches = repo::fetch_branch_list(project_id).await?;
+    let available_branches = repo::fetch_branch_list(&tool_config.github, project_config).await?;
     let mut customized_properties = project_config
         .customized_properties
         .iter()
@@ -52,17 +53,15 @@ pub async fn load_project_runtime_detail(
         .await
         .get(project_id)
         .map(|process| {
-            let (process_type, pid) = match process.as_ref() {
-                ChildProcess::Build(child) => (ProcessType::Build, child.pid()),
-                ChildProcess::Run(child) => (ProcessType::Run, child.pid()),
-                ChildProcess::Debug(child) => (ProcessType::Debug, child.pid()),
-                ChildProcess::Stop(child) => (ProcessType::Stop, child.pid()),
+            let (command_type, pid) = match process.as_ref() {
+                ChildProcess::Build(child) => (CommandType::Build, child.pid()),
+                ChildProcess::Run(child) => (CommandType::Run, child.pid()),
+                ChildProcess::Debug(child) => (CommandType::Debug, child.pid()),
             };
-            CurrentProcess {
-                process_type,
-                pid: Some(pid),
+            info!("Child process spawned with pid: {}", pid);
+            RunningCommandStatus::Running {
+                command_type,
                 project_id: project_id.clone(),
-                status: ProcessStatus::Running,
             }
         });
     let project_runtime_detail = ProjectRuntimeDetail {
@@ -72,7 +71,7 @@ pub async fn load_project_runtime_detail(
         working_branch: project_config.working_branch.clone(),
         remote_repo_url: project_config.remote_repo_url.clone(),
         local_repo_path: project_config.local_repo_path.clone(),
-        current_process,
+        current_running_command_status: current_process,
         build_command: project_config.build_command.clone(),
         run_command: project_config.run_command.clone(),
         stop_command: project_config.stop_command.clone(),
