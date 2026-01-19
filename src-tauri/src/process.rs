@@ -80,7 +80,7 @@ async fn spawn_child_program(
                         let line = match String::from_utf8(std_error) {
                             Ok(line) => line,
                             Err(e) => {
-                                error!("Fail to parse utf8 line: {e:?}");
+                                trace!("Fail to parse utf8 line: {e:?}");
                                 continue;
                             }
                         };
@@ -96,7 +96,7 @@ async fn spawn_child_program(
                         let line = match String::from_utf8(std_out) {
                             Ok(line) => line,
                             Err(e) => {
-                                error!("Fail to parse utf8 line: {e:?}");
+                                trace!("Fail to parse utf8 line: {e:?}");
                                 continue;
                             }
                         };
@@ -194,6 +194,17 @@ pub async fn spawn_build_process(
     Ok(())
 }
 
+async fn kill_program(app_handle: &AppHandle, command_child: CommandChild) -> Result<(), Error> {
+    let shell = app_handle.shell();
+    shell
+        .command("taskkill")
+        .args(["/pid", &command_child.pid().to_string(), "/t", "/f"])
+        .output()
+        .await?;
+    command_child.kill()?;
+    Ok(())
+}
+
 pub async fn spawn_stop_process(
     app_handle: &AppHandle,
     project_id: &ProjectId,
@@ -205,7 +216,7 @@ pub async fn spawn_stop_process(
         match project_child_process {
             ChildProcess::Build(command_child) => {
                 info!("Begin to stop child process (building) for project: {project_id}");
-                command_child.kill()?;
+                kill_program(app_handle, command_child).await?;
                 info!("Stop child process (building) for project: {project_id}");
                 push_global_log_to_frontend(
                     app_handle,
@@ -216,7 +227,7 @@ pub async fn spawn_stop_process(
             }
             ChildProcess::Run(command_child) => {
                 info!("Begin to stop child process (running) for project: {project_id}");
-                command_child.kill()?;
+                kill_program(app_handle, command_child).await?;
                 info!("Stop child process (running) for project: {project_id}");
                 push_global_log_to_frontend(
                     app_handle,
@@ -227,7 +238,7 @@ pub async fn spawn_stop_process(
             }
             ChildProcess::Debug(command_child) => {
                 info!("Begin to stop child process (debugging) for project: {project_id}");
-                command_child.kill()?;
+                kill_program(app_handle, command_child).await?;
                 info!("Stop child process (debugging) for project: {project_id}");
                 push_global_log_to_frontend(
                     app_handle,
