@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import {useRoute} from "vue-router";
 import {ref, watch} from "vue";
-import {Button, Column, DataTable, DataTableCellEditCompleteEvent, InputText, Select, SplitButton, Tag} from "primevue";
+import {Button, InputText, Select, SplitButton, Tag, Textarea} from "primevue";
 import Fieldset from "primevue/fieldset";
 import {
     EXEC_BUILD_PROCESS,
@@ -12,7 +12,7 @@ import {
     SAVE_PROJECT_CMD
 } from "../common.ts";
 import {Channel, invoke} from "@tauri-apps/api/core";
-import {RunningCommandStatus,ProjectRuntimeDetail, ProjectRuntimeUpdate} from "../messages/project.ts";
+import {ProjectRuntimeDetail, ProjectRuntimeUpdate, RunningCommandStatus} from "../messages/project.ts";
 
 let currentRoute = useRoute();
 
@@ -34,9 +34,9 @@ let projectRuntimeDetailRef = ref<ProjectRuntimeDetail>({
     runCommand: undefined,
     stopCommand: undefined,
     debugCommand: undefined,
-    customizedProperties: [],
+    customizedProperties: undefined,
 });
-
+let projectIdRef = ref();
 let buildCommandRef = ref();
 let runCommandRef = ref();
 let debugCommandRef = ref();
@@ -44,6 +44,7 @@ let currentRunningCommandStatusRef = ref<RunningCommandStatus | undefined | null
 
 function switchProjectDetail(projectId: string) {
     loading.value = true;
+    projectIdRef.value = projectId;
     invoke<ProjectRuntimeDetail>(GET_PROJECT_RUNTIME_DETAIL_CMD, {projectId}).then((backendData) => {
         projectRuntimeDetailRef.value = backendData;
         buildCommandRef.value = backendData.customizedBuildCommand ?? backendData.buildCommand;
@@ -52,9 +53,6 @@ function switchProjectDetail(projectId: string) {
         loading.value = false;
         actionButtonDisable.value = !!backendData.currentRunningCommandStatus;
         currentRunningCommandStatusRef.value = backendData.currentRunningCommandStatus;
-        for (let prop of projectRuntimeDetailRef.value.customizedProperties) {
-            console.log(`Customized property - key: ${prop.key}, value: ${prop.value}`);
-        }
     });
 }
 
@@ -190,26 +188,6 @@ function execStopProcess() {
     });
 }
 
-function onCPEditComplete(event: DataTableCellEditCompleteEvent) {
-    let {data, newValue, field} = event;
-    data[field] = newValue;
-}
-
-function deleteCPProperty(key: string) {
-    projectRuntimeDetailRef.value.customizedProperties = projectRuntimeDetailRef.value.customizedProperties.filter((prop) => prop.key !== key);
-}
-
-function addCPProperty() {
-    let emptyItem = projectRuntimeDetailRef.value.customizedProperties.find((prop) => prop.key.trim().length == 0);
-    if (emptyItem) {
-        return;
-    }
-    projectRuntimeDetailRef.value.customizedProperties.push({
-        key: "",
-        value: "",
-    });
-}
-
 const actionCommands = [
     {
         label: "CLONE",
@@ -262,14 +240,15 @@ const actionCommands = [
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="githubRepositoryUrl">Repository url</label>
-                        <InputText id="githubRepositoryUrl" v-model="projectRuntimeDetailRef.remoteRepoUrl" readonly/>
+                        <InputText id="githubRepositoryUrl" v-model.trim="projectRuntimeDetailRef.remoteRepoUrl"
+                                   readonly/>
                         <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
                             the GitHub repository url.
                         </Message>
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="localRepoPath">Local repository path</label>
-                        <InputText id="localRepoPath" v-model="projectRuntimeDetailRef.localRepoPath"/>
+                        <InputText id="localRepoPath" v-model.trim="projectRuntimeDetailRef.localRepoPath"/>
                         <Message class="text-gray-500 text-sm flex flex-col gap-2" severity="secondary" size="small"
                                  variant="simple">
                             <span>Enter the local repository path.</span>
@@ -277,10 +256,12 @@ const actionCommands = [
                             <span class="text-primary"> {{
                                     projectRuntimeDetailRef.localRepoPath
                                 }}\{{ projectRuntimeDetailRef.workingBranch }} </span>
-                            <span>The customized properties directory path will be:</span>
+                            <span>The customized properties file path will be:</span>
                             <span class="text-primary"> {{
                                     projectRuntimeDetailRef.localRepoPath
-                                }}\{{ projectRuntimeDetailRef.workingBranch }}-configuration </span>
+                                }}\{{ projectRuntimeDetailRef.workingBranch }}-configuration\{{
+                                    projectIdRef
+                                }}.properties </span>
                         </Message>
                     </div>
                 </div>
@@ -289,21 +270,27 @@ const actionCommands = [
                 <div class="flex flex-col gap-4">
                     <div class="flex flex-col gap-2 mb-4">
                         <label class="text-lg" for="buildCommand">Build command</label>
-                        <InputText id="buildCommand" v-model="buildCommandRef"/>
+                        <Textarea id="buildCommand" v-model.trim="buildCommandRef"
+                                  class="flex flex-col w-full h-full overflow-y-auto resize-none mt-4 mb-4"
+                                  style="min-height: 100px; max-height: 400px"></Textarea>
                         <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
                             the build command.
                         </Message>
                     </div>
                     <div class="flex flex-col gap-2 mb-4">
                         <label class="text-lg" for="runCommand">Run command</label>
-                        <InputText id="runCommand" v-model="runCommandRef"/>
+                        <Textarea id="runCommand" v-model.trim="runCommandRef"
+                                  class="flex flex-col w-full h-full overflow-y-auto resize-none mt-4 mb-4"
+                                  style="min-height: 100px; max-height: 400px"></Textarea>
                         <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
                             the run command.
                         </Message>
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="debugCommand">Debug command</label>
-                        <InputText id="debugCommand" v-model="debugCommandRef"/>
+                        <Textarea id="debugCommand" v-model.trim="debugCommandRef"
+                                  class="flex flex-col w-full h-full overflow-y-auto resize-none mt-4 mb-4"
+                                  style="min-height: 100px; max-height: 400px"></Textarea>
                         <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
                             the debug command.
                         </Message>
@@ -311,42 +298,12 @@ const actionCommands = [
                 </div>
             </Fieldset>
 
-            <Fieldset class="text-xl pb-3 pt-3" legend="CISTOMIZED PROPERTIES" toggleable>
+            <Fieldset class="text-xl pb-3 pt-3" legend="CUSTOMIZED PROPERTIES" toggleable>
                 <div class="flex flex-col gap-4">
                     <div class="flex flex-col gap-2 mb-4">
-                        <DataTable
-                            :value="projectRuntimeDetailRef.customizedProperties"
-                            class="w-full"
-                            edit-mode="cell"
-                            scroll-height="400px"
-                            scrollable
-                            @cell-edit-complete="onCPEditComplete"
-                        >
-                            <Column body-class="text-xs w-5/11" field="key" header="Key"
-                                    header-class="text-sm text-primary">
-                                <template #editor="{ data, field }">
-                                    <InputText v-model="data[field]" autofocus class="text-xs! w-fit h-fit" fluid
-                                               style="padding: 0; margin: 0; border: 0"/>
-                                </template>
-                            </Column>
-                            <Column body-class="text-xs w-5/11" field="value" header="Value"
-                                    header-class="text-sm text-primary">
-                                <template #editor="{ data, field }">
-                                    <InputText v-model="data[field]" autofocus class="text-xs! w-fit h-fit" fluid
-                                               style="padding: 0; margin: 0; border: 0"/>
-                                </template>
-                            </Column>
-                            <Column body-class="text-xs w-1/11" field="value" header-class="text-sm text-primary">
-                                <template #body="{ data }">
-                                    <Button icon="pi pi-times" rounded severity="danger" size="small" variant="text"
-                                            @click="deleteCPProperty(data['key'])"/>
-                                </template>
-                            </Column>
-                        </DataTable>
-                        <div class="flex flex-row justify-center">
-                            <Button icon="pi pi-plus" rounded severity="primary" size="small"
-                                    @click="addCPProperty"></Button>
-                        </div>
+                        <Textarea v-model.trim="projectRuntimeDetailRef.customizedProperties"
+                                  class="flex flex-col w-full h-full overflow-y-auto resize-none mt-4 mb-4"
+                                  style="min-height: 200px; max-height: 400px"></Textarea>
                     </div>
                 </div>
             </Fieldset>
@@ -360,18 +317,19 @@ const actionCommands = [
                     label="SAVE"
                     @click="saveProject"
                     ></SplitButton> -->
-                
-                    <SplitButton
-                        :disabled="actionButtonDisable"
-                        :model="actionCommands"
-                        class="uppercase"
-                        dropdownIcon="pi pi-cog"
-                        icon="pi pi-check"
-                        label="SAVE"
-                        @click="saveProject">
-                    </SplitButton>
-                    
-                    <Button @click="execStopProcess" class="uppercase bg-red-500" icon="pi pi-stop" severity="danger" label="STOP"></Button>
+
+                <SplitButton
+                    :disabled="actionButtonDisable"
+                    :model="actionCommands"
+                    class="uppercase"
+                    dropdownIcon="pi pi-cog"
+                    icon="pi pi-check"
+                    label="SAVE"
+                    @click="saveProject">
+                </SplitButton>
+
+                <Button class="uppercase bg-red-500" icon="pi pi-stop" label="STOP" severity="danger"
+                        @click="execStopProcess"></Button>
             </div>
         </div>
     </div>

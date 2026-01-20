@@ -1,5 +1,4 @@
 use config::ConfigError;
-use java_properties::PropertiesError;
 use tauri::ipc::InvokeError;
 use thiserror::Error;
 
@@ -25,8 +24,6 @@ pub enum Error {
     RunCommandNotFound(ProjectId),
     #[error("Program part not found: {0}")]
     ProgramPartNotFound(ProjectId),
-    #[error(transparent)]
-    PropertiesError(#[from] PropertiesError),
     #[error(transparent)]
     TauriShellPluginError(#[from] tauri_plugin_shell::Error),
 }

@@ -9,8 +9,7 @@ use crate::config::ProjectConfig;
 use crate::error::Error;
 use std::collections::HashMap;
 
-use java_properties::write;
-use std::io::BufWriter;
+use std::io::Write;
 use std::ops::Deref;
 use std::sync::{Arc, LazyLock};
 use tauri::AppHandle;
@@ -53,7 +52,7 @@ async fn spawn_child_program(
     let shell = app_handle.shell();
     let (mut receiver, child) = shell
         .command("cmd")
-        .args(["/C", command])
+        .args(["/C", command.trim()])
         .current_dir(
             project_config
                 .local_repo_path
@@ -65,7 +64,7 @@ async fn spawn_child_program(
     push_global_log_to_frontend(
         app_handle,
         project_id,
-        format!("Child process for [{command}] spawned, process id: {child_process_id}",),
+        format!("Child process for [{command}] spawned, process id: {child_process_id}", ),
         GlobalLogLevel::Info,
     );
     {
@@ -117,7 +116,7 @@ async fn spawn_child_program(
                             push_global_notification_to_frontend(&app_handle, &project_id, format!(
                                 "Project {project_id} sub process {child_process_id} terminated with code: {:?}, signal: {:?}",
                                 terminate.code, terminate.signal
-                            ),format!("Project {project_id} build process success."),GlobalNotificationLevel::Success);
+                            ), format!("Project {project_id} build process success."), GlobalNotificationLevel::Success);
                             if let Err(e) = child_process_status_tx
                                 .send(RunningCommandStatus::TerminatedSuccess {
                                     command_type,
@@ -186,7 +185,7 @@ pub async fn spawn_build_process(
         CommandType::Build,
         child_process_status_tx,
     )
-    .await?;
+        .await?;
     PROJECT_CHILD_PROCESS_REPO
         .lock()
         .await
@@ -221,7 +220,7 @@ pub async fn spawn_stop_process(
                 push_global_log_to_frontend(
                     app_handle,
                     project_id,
-                    format!("Child process (building) for project [{project_id:?}] is killed.",),
+                    format!("Child process (building) for project [{project_id:?}] is killed.", ),
                     GlobalLogLevel::Info,
                 );
             }
@@ -232,7 +231,7 @@ pub async fn spawn_stop_process(
                 push_global_log_to_frontend(
                     app_handle,
                     project_id,
-                    format!("Child process (running) for project [{project_id:?}] is killed.",),
+                    format!("Child process (running) for project [{project_id:?}] is killed.", ),
                     GlobalLogLevel::Info,
                 );
             }
@@ -243,7 +242,7 @@ pub async fn spawn_stop_process(
                 push_global_log_to_frontend(
                     app_handle,
                     project_id,
-                    format!("Child process (debugging) for project [{project_id:?}] is killed.",),
+                    format!("Child process (debugging) for project [{project_id:?}] is killed.", ),
                     GlobalLogLevel::Info,
                 );
             }
@@ -273,11 +272,10 @@ pub async fn spawn_run_process(
         std::fs::create_dir_all(&customized_cfg_dir)?;
     }
     let customized_properties_file = customized_cfg_dir.join(format!("{project_id}.properties"));
-    let customized_properties_file = std::fs::File::create(customized_properties_file)?;
-    write(
-        BufWriter::new(customized_properties_file),
-        &project_config.customized_properties,
-    )?;
+    let mut customized_properties_file = std::fs::File::create(customized_properties_file)?;
+    if let Some(properties_file_content) = &project_config.customized_properties {
+        customized_properties_file.write_all(properties_file_content.as_bytes())?;
+    }
     let run_command = project_config
         .customized_run_command
         .as_deref()
@@ -290,7 +288,7 @@ pub async fn spawn_run_process(
         CommandType::Run,
         child_process_status_tx,
     )
-    .await?;
+        .await?;
     PROJECT_CHILD_PROCESS_REPO
         .lock()
         .await

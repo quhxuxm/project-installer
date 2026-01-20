@@ -1,14 +1,6 @@
-export enum GlobalNotificationLevel {
-    INFO = 'info',
-    WARN = 'warn',
-    ERROR = 'error',
-    Success = 'success',
-}
-
-
 export type GlobalNotificationEvent = {
     projectId: string;
-    level: GlobalNotificationLevel;
+    level: "info" | "warn" | "error" | "success";
     message: string;
     summary: string
 }

@@ -39,15 +39,8 @@ pub async fn load_project_runtime_detail(
         .get(project_id)
         .ok_or(Error::ProjectNotFound(project_id.clone()))?;
     let available_branches = repo::fetch_branch_list(&tool_config.github, project_config).await?;
-    let mut customized_properties = project_config
-        .customized_properties
-        .iter()
-        .map(|(key, value)| PropertyItem {
-            key: key.clone(),
-            value: value.clone(),
-        })
-        .collect::<Vec<PropertyItem>>();
-    customized_properties.sort();
+
+
     let current_process = PROJECT_CHILD_PROCESS_REPO
         .lock()
         .await
@@ -80,7 +73,7 @@ pub async fn load_project_runtime_detail(
         customized_run_command: project_config.customized_run_command.clone(),
         customized_stop_command: project_config.customized_stop_command.clone(),
         customized_debug_command: project_config.customized_debug_command.clone(),
-        customized_properties,
+        customized_properties:project_config.customized_properties.clone(),
     };
     Ok(project_runtime_detail)
 }

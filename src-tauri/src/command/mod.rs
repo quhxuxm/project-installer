@@ -63,10 +63,7 @@ async fn save_project_runtime_update(
     project.customized_run_command = project_runtime_update.run_command;
     project.customized_debug_command = project_runtime_update.debug_command;
     project.customized_properties = project_runtime_update
-        .customized_properties
-        .iter()
-        .map(|item| (item.key.clone(), item.value.clone()))
-        .collect();
+        .customized_properties;
     project.available_branches = available_branches;
     save_tool_config(tool_config).map_err(|e| {
         error!("Fail to save project config: {e}");
@@ -95,14 +92,14 @@ pub async fn get_github_runtime_detail() -> Result<GitHubRuntimeDetail, Error> {
 #[tauri::command]
 pub async fn save_project(
     project_runtime_update: ProjectRuntimeUpdate,
-    response_channel: Channel<RunningCommandStatus>,
+    command_status_channel: Channel<RunningCommandStatus>,
 ) {
     let mut tool_config = TOOL_CONFIG.write().await;
     if let Err(e) =
         save_project_runtime_update(&mut tool_config, project_runtime_update, CommandType::Save)
             .await
     {
-        push_current_process_status_to_frontend(&response_channel, e);
+        push_current_process_status_to_frontend(&command_status_channel, e);
     };
 }
 
