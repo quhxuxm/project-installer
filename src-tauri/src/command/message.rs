@@ -1,6 +1,5 @@
 use crate::common::ProjectId;
 use serde::{Deserialize, Serialize};
-use std::cmp::Ordering;
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -85,31 +84,6 @@ pub enum RunningCommandStatus {
         command_type: CommandType,
         project_id: ProjectId,
     },
-}
-
-#[derive(Debug, Serialize, Deserialize, Eq, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct PropertyItem {
-    pub key: String,
-    pub value: String,
-}
-
-impl PartialEq<Self> for PropertyItem {
-    fn eq(&self, other: &Self) -> bool {
-        self.key == other.key
-    }
-}
-
-impl PartialOrd for PropertyItem {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for PropertyItem {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.key.cmp(&other.key)
-    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]

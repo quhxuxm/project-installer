@@ -91,7 +91,7 @@ local_repo_path = 'D:\Workspace\GitHub\playcasino\gsr'
 build_command = "mvn clean package -DskipTests"
 customized_build_command = "mvn clean package -DskipTests"
 run_command = "mvn clean package -DskipTests"
-customized_run_command = "mvn clean package -DskipTests"
+customized_run_command = 'java -jar entry\target\gsr.jar'
 debug_command = "mvn clean package -DskipTests"
 customized_debug_command = "mvn clean package -DskipTests"
 stop_command = "mvn clean package -DskipTests"
@@ -104,7 +104,7 @@ APP_NAME = gsr
 gsr-service-connector.cache-service.clusterName = cache_${ENV_NAME}
 gsr-hazelcast-session.jvmRoute = gsr01
 spring.kafka.consumer.group-id = GSR-${ENV_NAME:zhangsan777}
-gsr-service-connector.cache-service.networkConfig.addresses = 127.0.0.1:${MY_HAZELCAST_PORT}
+gsr-service-connector.cache-service.networkConfig.addresses = 127.0.0.1:10701
 logging.level.root = ERROR
 gsr-hazelcast-session.hazelcastMemberList = 127.0.0.1
 jackpot.meter-host = jps-dev08-meter.lab.wagerworks.com
@@ -133,8 +133,7 @@ gsr-service-connector.pas-service.baseUrl = http://${MY_DOMAIN:localhost}:11080/
 gsr-business.bis.cptWidgetEnabled = N
 gsr-business.flightdeck-url = http://${MY_DOMAIN:localhost}:11780/flightdeck/gs/flightdeck
 gsr-service-connector.GeoServiceStub.geoService.password = geo
-gsr-service-connector.apache-service.baseUrl = http://${MY_DOMAIN:localhost}:10180
-"""
+gsr-service-connector.apache-service.baseUrl = http://${MY_DOMAIN:localhost}:10180"""
 
 [projects.nss]
 name = "NSS Service"

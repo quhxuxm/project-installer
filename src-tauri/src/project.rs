@@ -1,5 +1,5 @@
 use crate::command::message::{
-    CommandType, GitHubRuntimeDetail, ProjectRuntimeDetail, ProjectRuntimeSummary, PropertyItem,
+    CommandType, GitHubRuntimeDetail, ProjectRuntimeDetail, ProjectRuntimeSummary,
     RunningCommandStatus,
 };
 use crate::process::{ChildProcess, PROJECT_CHILD_PROCESS_REPO};
