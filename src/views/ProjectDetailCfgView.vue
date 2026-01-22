@@ -1,18 +1,11 @@
 <script lang="ts" setup>
-import {useRoute} from "vue-router";
-import {ref, watch} from "vue";
-import {Button, InputText, Select, SplitButton, Tag, Textarea} from "primevue";
+import { useRoute } from "vue-router";
+import { ref, watch } from "vue";
+import { Button, InputText, Select, SplitButton, Tag, Textarea } from "primevue";
 import Fieldset from "primevue/fieldset";
-import {
-    EXEC_BUILD_PROCESS,
-    EXEC_RUN_PROCESS,
-    EXEC_STOP_PROCESS,
-    GET_PROJECT_CODE_CMD,
-    GET_PROJECT_RUNTIME_DETAIL_CMD,
-    SAVE_PROJECT_CMD
-} from "../common.ts";
-import {Channel, invoke} from "@tauri-apps/api/core";
-import {ProjectRuntimeDetail, ProjectRuntimeUpdate, RunningCommandStatus} from "../messages/project.ts";
+import { EXEC_BUILD_PROCESS, EXEC_RUN_PROCESS, EXEC_STOP_PROCESS, GET_PROJECT_CODE_CMD, GET_PROJECT_RUNTIME_DETAIL_CMD, SAVE_PROJECT_CMD } from "../common.ts";
+import { Channel, invoke } from "@tauri-apps/api/core";
+import { ProjectRuntimeDetail, ProjectRuntimeUpdate, RunningCommandStatus } from "../messages/project.ts";
 
 let currentRoute = useRoute();
 
@@ -34,18 +27,20 @@ let projectRuntimeDetailRef = ref<ProjectRuntimeDetail>({
     runCommand: undefined,
     stopCommand: undefined,
     debugCommand: undefined,
-    customizedProperties: undefined,
+    defaultCustomizedProperties: undefined,
+    branchCustomizedProperties: undefined,
 });
 let projectIdRef = ref();
 let buildCommandRef = ref();
 let runCommandRef = ref();
 let debugCommandRef = ref();
 let currentRunningCommandStatusRef = ref<RunningCommandStatus | undefined | null>();
+let customizePropertiesRef = ref("");
 
 function switchProjectDetail(projectId: string) {
     loading.value = true;
     projectIdRef.value = projectId;
-    invoke<ProjectRuntimeDetail>(GET_PROJECT_RUNTIME_DETAIL_CMD, {projectId}).then((backendData) => {
+    invoke<ProjectRuntimeDetail>(GET_PROJECT_RUNTIME_DETAIL_CMD, { projectId }).then((backendData) => {
         projectRuntimeDetailRef.value = backendData;
         buildCommandRef.value = backendData.customizedBuildCommand ?? backendData.buildCommand;
         runCommandRef.value = backendData.customizedRunCommand ?? backendData.runCommand;
@@ -53,6 +48,7 @@ function switchProjectDetail(projectId: string) {
         loading.value = false;
         actionButtonDisable.value = !!backendData.currentRunningCommandStatus;
         currentRunningCommandStatusRef.value = backendData.currentRunningCommandStatus;
+        customizePropertiesRef.value = backendData.branchCustomizedProperties ?? backendData.defaultCustomizedProperties ?? "";
     });
 }
 
@@ -74,7 +70,7 @@ function generateProjectUpdate(): ProjectRuntimeUpdate {
         runCommand: runCommandRef.value,
         projectId: currentRoute.params.id as string,
         workingBranch: projectRuntimeDetailRef.value.workingBranch,
-        customizedProperties: projectRuntimeDetailRef.value.customizedProperties,
+        customizedProperties: customizePropertiesRef.value,
     };
 }
 
@@ -115,7 +111,7 @@ function saveProject() {
     let projectRuntimeUpdate = generateProjectUpdate();
     invoke(SAVE_PROJECT_CMD, {
         projectRuntimeUpdate,
-        commandStatusChannel
+        commandStatusChannel,
     })
         .then(() => {
             actionButtonDisable.value = false;
@@ -221,47 +217,36 @@ const actionCommands = [
     <div v-else class="h-full w-full flex flex-col gap-4 justify-self-center">
         <div class="text-2xl text-primary mb-4 uppercase flex flex-row gap-4 items-center">
             {{ projectRuntimeDetailRef.name }}
-            <Tag v-if="currentRunningCommandStatusRef?.commandType==='Build'" value="Building"></Tag>
-            <Tag v-if="currentRunningCommandStatusRef?.commandType==='Run'" value="Running"></Tag>
-            <Tag v-if="currentRunningCommandStatusRef?.commandType==='Debug'" value="Debugging"></Tag>
-            <Tag v-if="currentRunningCommandStatusRef?.commandType==='FetchCode'" value="Fetching Code"></Tag>
-            <Tag v-if="currentRunningCommandStatusRef?.commandType==='Save'" value="Saving"></Tag>
+            <Tag v-if="currentRunningCommandStatusRef?.commandType === 'Build'" value="Building"></Tag>
+            <Tag v-if="currentRunningCommandStatusRef?.commandType === 'Run'" value="Running"></Tag>
+            <Tag v-if="currentRunningCommandStatusRef?.commandType === 'Debug'" value="Debugging"></Tag>
+            <Tag v-if="currentRunningCommandStatusRef?.commandType === 'FetchCode'" value="Fetching Code"></Tag>
+            <Tag v-if="currentRunningCommandStatusRef?.commandType === 'Save'" value="Saving"></Tag>
         </div>
         <div class="flex flex-col gap-4">
             <Fieldset class="text-xl pb-3 pt-3" legend="REPOSITORY CONFIGURATION" toggleable>
                 <div class="flex flex-col gap-4">
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="githubBranch">Branch</label>
-                        <Select id="githubBranch" v-model="projectRuntimeDetailRef.workingBranch"
-                                :options="projectRuntimeDetailRef.availableBranches"></Select>
-                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
-                            the GitHub branch.
-                        </Message>
+                        <Select id="githubBranch" v-model="projectRuntimeDetailRef.workingBranch" :options="projectRuntimeDetailRef.availableBranches"></Select>
+                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter the GitHub branch. </Message>
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="githubRepositoryUrl">Repository url</label>
-                        <InputText id="githubRepositoryUrl" v-model.trim="projectRuntimeDetailRef.remoteRepoUrl"
-                                   readonly/>
-                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
-                            the GitHub repository url.
-                        </Message>
+                        <InputText id="githubRepositoryUrl" v-model.trim="projectRuntimeDetailRef.remoteRepoUrl" readonly />
+                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter the GitHub repository url. </Message>
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="localRepoPath">Local repository path</label>
-                        <InputText id="localRepoPath" v-model.trim="projectRuntimeDetailRef.localRepoPath"/>
-                        <Message class="text-gray-500 text-sm flex flex-col gap-2" severity="secondary" size="small"
-                                 variant="simple">
+                        <InputText id="localRepoPath" v-model.trim="projectRuntimeDetailRef.localRepoPath" />
+                        <Message class="text-gray-500 text-sm flex flex-col gap-2" severity="secondary" size="small" variant="simple">
                             <span>Enter the local repository path.</span>
                             <span>The concrete local path will be:</span>
-                            <span class="text-primary"> {{
-                                    projectRuntimeDetailRef.localRepoPath
-                                }}\{{ projectRuntimeDetailRef.workingBranch }} </span>
+                            <span class="text-primary"> {{ projectRuntimeDetailRef.localRepoPath }}\{{ projectRuntimeDetailRef.workingBranch }} </span>
                             <span>The customized properties file path will be:</span>
-                            <span class="text-primary"> {{
-                                    projectRuntimeDetailRef.localRepoPath
-                                }}\{{ projectRuntimeDetailRef.workingBranch }}-configuration\{{
-                                    projectIdRef
-                                }}.properties </span>
+                            <span class="text-primary">
+                                {{ projectRuntimeDetailRef.localRepoPath }}\{{ projectRuntimeDetailRef.workingBranch }}-configuration\{{ projectIdRef }}.properties
+                            </span>
                         </Message>
                     </div>
                 </div>
@@ -270,30 +255,33 @@ const actionCommands = [
                 <div class="flex flex-col gap-4">
                     <div class="flex flex-col gap-2 mb-4">
                         <label class="text-lg" for="buildCommand">Build command</label>
-                        <Textarea id="buildCommand" v-model.trim="buildCommandRef"
-                                  class="flex flex-col w-full h-full overflow-y-auto resize-none mt-4 mb-4"
-                                  style="min-height: 100px; max-height: 400px"></Textarea>
-                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
-                            the build command.
-                        </Message>
+                        <Textarea
+                            id="buildCommand"
+                            v-model.trim="buildCommandRef"
+                            class="flex flex-col w-full h-full overflow-y-auto resize-none mt-4 mb-4"
+                            style="min-height: 100px; max-height: 400px"
+                        ></Textarea>
+                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter the build command. </Message>
                     </div>
                     <div class="flex flex-col gap-2 mb-4">
                         <label class="text-lg" for="runCommand">Run command</label>
-                        <Textarea id="runCommand" v-model.trim="runCommandRef"
-                                  class="flex flex-col w-full h-full overflow-y-auto resize-none mt-4 mb-4"
-                                  style="min-height: 100px; max-height: 400px"></Textarea>
-                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
-                            the run command.
-                        </Message>
+                        <Textarea
+                            id="runCommand"
+                            v-model.trim="runCommandRef"
+                            class="flex flex-col w-full h-full overflow-y-auto resize-none mt-4 mb-4"
+                            style="min-height: 100px; max-height: 400px"
+                        ></Textarea>
+                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter the run command. </Message>
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-lg" for="debugCommand">Debug command</label>
-                        <Textarea id="debugCommand" v-model.trim="debugCommandRef"
-                                  class="flex flex-col w-full h-full overflow-y-auto resize-none mt-4 mb-4"
-                                  style="min-height: 100px; max-height: 400px"></Textarea>
-                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter
-                            the debug command.
-                        </Message>
+                        <Textarea
+                            id="debugCommand"
+                            v-model.trim="debugCommandRef"
+                            class="flex flex-col w-full h-full overflow-y-auto resize-none mt-4 mb-4"
+                            style="min-height: 100px; max-height: 400px"
+                        ></Textarea>
+                        <Message class="text-gray-500 text-sm" severity="secondary" size="small" variant="simple">Enter the debug command. </Message>
                     </div>
                 </div>
             </Fieldset>
@@ -301,9 +289,11 @@ const actionCommands = [
             <Fieldset class="text-xl pb-3 pt-3" legend="CUSTOMIZED PROPERTIES" toggleable>
                 <div class="flex flex-col gap-4">
                     <div class="flex flex-col gap-2 mb-4">
-                        <Textarea v-model.trim="projectRuntimeDetailRef.customizedProperties"
-                                  class="flex flex-col w-full h-full overflow-y-auto resize-none mt-4 mb-4"
-                                  style="min-height: 200px; max-height: 400px"></Textarea>
+                        <Textarea
+                            v-model.trim="customizePropertiesRef"
+                            class="flex flex-col w-full h-full overflow-y-auto resize-none mt-4 mb-4"
+                            style="min-height: 200px; max-height: 400px"
+                        ></Textarea>
                     </div>
                 </div>
             </Fieldset>
@@ -325,11 +315,11 @@ const actionCommands = [
                     dropdownIcon="pi pi-cog"
                     icon="pi pi-check"
                     label="SAVE"
-                    @click="saveProject">
+                    @click="saveProject"
+                >
                 </SplitButton>
 
-                <Button class="uppercase bg-red-500" icon="pi pi-stop" label="STOP" severity="danger"
-                        @click="execStopProcess"></Button>
+                <Button class="uppercase bg-red-500" icon="pi pi-stop" label="STOP" severity="danger" @click="execStopProcess"></Button>
             </div>
         </div>
     </div>

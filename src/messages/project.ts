@@ -27,7 +27,8 @@ export type ProjectRuntimeDetail = {
     customizedRunCommand: string | null | undefined;
     customizedStopCommand: string | null | undefined;
     customizedDebugCommand: string | null | undefined;
-    customizedProperties: string | null | undefined;
+    defaultCustomizedProperties: string | null | undefined;
+    branchCustomizedProperties: string | null | undefined;
 };
 
 export type ProjectRuntimeUpdate = {

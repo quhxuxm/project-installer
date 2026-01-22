@@ -3,15 +3,15 @@ username = "quhxuxm"
 token = ""
 proxy = "http://127.0.0.1:10080"
 
-[projects.jrs]
-name = "Jurisdiction Service"
-description = "The Jurisdiction service."
-remote_repo_url = "https://github.com/igt-playcasino/jrs.git"
+[projects.pas]
+name = "PAS Service"
+description = "PAS Service is also named as player account service"
+remote_repo_url = "https://github.com/igt-playcasino/pas.git"
 working_branch = "6.10.0-develop"
 available_branches = []
-local_repo_path = 'D:\Workspace\GitHub\playcasino\jrs'
+local_repo_path = 'D:\Workspace\GitHub\playcasino\pas'
 build_command = "mvn clean package -DskipTests"
-customized_build_command = "mvn clean package -DskipTests -f jrs/pom.xml"
+customized_build_command = 'mvn clean package -DskipTests -f app\pom.xml'
 run_command = "mvn clean package -DskipTests"
 customized_run_command = "mvn clean package -DskipTests"
 debug_command = "mvn clean package -DskipTests"
@@ -19,51 +19,47 @@ customized_debug_command = "mvn clean package -DskipTests"
 stop_command = "mvn clean package -DskipTests"
 startup_dependencies = []
 
-[projects.ruleengine]
-name = "Rule Engine Service"
-description = "The Rule Engine service."
-remote_repo_url = "https://github.com/igt-playcasino/ruleengine.git"
-working_branch = "6.10.0-develop"
-available_branches = []
-local_repo_path = 'D:\Workspace\GitHub\playcasino\ruleengine'
-build_command = "mvn clean package -DskipTests"
-customized_build_command = "mvn clean package -DskipTests"
-run_command = "mvn clean package -DskipTests"
-customized_run_command = "mvn clean package -DskipTests"
-debug_command = "mvn clean package -DskipTests"
-customized_debug_command = "mvn clean package -DskipTests"
-stop_command = "mvn clean package -DskipTests"
-startup_dependencies = []
+[projects.pas.branch_customized_properties]
 
-[projects.cpt]
-name = "Competition Service"
-description = "Competition Service is one of the promotion service to make competitions."
-remote_repo_url = "https://github.com/igt-playcasino/competition.git"
+[projects.cache]
+name = "Cache Service"
+description = "The cache service."
+remote_repo_url = "https://github.com/igt-playcasino/cache.git"
 working_branch = "6.10.0-develop"
 available_branches = [
     "6.10.0-develop",
-    "6.9.0-PR-4343",
-    "6.9.0-PR-4355",
-    "6.9.0-RGSHOTFIX-184",
     "6.9.0-develop",
     "6.9.0-release",
-    "RGS-31868---UTs-for-Competition-service",
-    "RGS-31868---UTs-for-Competition-service-common-PR",
-    "jeffer-cpt-6.9.0-PR4355",
-    "lilin/6.9.0-PR-4355-DB",
-    "lizhaowei/6.9.0-RGSHOTFIX-184",
-    "lizhaowei/6.9.0-release",
-    "wangnile/cpt-610",
 ]
-local_repo_path = 'D:\Workspace\GitHub\playcasino\competition'
+local_repo_path = 'D:\Workspace\GitHub\playcasino\cache'
 build_command = "mvn clean package -DskipTests"
-customized_build_command = "mvn clean package -DskipTests"
+customized_build_command = 'mvn clean package -DskipTests -f cache\pom.xml'
 run_command = "mvn clean package -DskipTests"
-customized_run_command = "mvn clean package -DskipTests"
+customized_run_command = 'java -jar -Dspring.config.additional-location=file:D:\Workspace\GitHub\playcasino\cache\6.10.0-develop-configuration\cache.properties cache\cache-hazelcast\target\cache-hazelcast-6.10.0-SNAPSHOT.jar'
 debug_command = "mvn clean package -DskipTests"
 customized_debug_command = "mvn clean package -DskipTests"
 stop_command = "mvn clean package -DskipTests"
 startup_dependencies = []
+default_customized_properties = """
+competition.datasource.url = jdbc:postgresql://rno-pg-db01.lab.wagerworks.com:5432/cptdev?stringtype=unspecified
+logging.level.root = DEBUG
+cec.db.user = cecdev17
+logging.pattern.console = %d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%t] [%c{1}] %msg%n
+cache-service.mainHazelcastConfigurationProperties.hz.network.port = 10701
+gsr.db.password = gsrdev17
+gsr.db.user = gsrdev17
+cec.db.jdbcUrl = jdbc:postgresql://rno-pg-db01.lab.wagerworks.com:5432/cecdev?stringtype=unspecified
+cec.db.password = cecdev17
+competition.datasource.password = cptdev17
+CACHE_HAZELCAST_QUORUM_SIZE = 2
+competition.datasource.username = cptdev17
+gsr.db.jdbcUrl = jdbc:postgresql://rno-pg-db01.lab.wagerworks.com:5432/gsrdev?stringtype=unspecified
+CACHE_HAZELCAST_QUORUM_ENABLED = false
+logging.pattern.file = %d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%t] [%c{1}] %msg%n
+cache-service.mainHazelcastConfigurationProperties.hz.cluster.name = cache_local
+"""
+
+[projects.cache.branch_customized_properties]
 
 [projects.gsr]
 name = "Game Service Router"
@@ -96,7 +92,7 @@ debug_command = "mvn clean package -DskipTests"
 customized_debug_command = "mvn clean package -DskipTests"
 stop_command = "mvn clean package -DskipTests"
 startup_dependencies = []
-customized_properties = """
+default_customized_properties = """
 spring.datasource.url = jdbc:postgresql://rno-pg-db01.lab.wagerworks.com:5432/gsrdev?stringtype=unspecified
 gsr-service-connector.GeoServiceStub.geoService.userName = geo
 gsr-service-connector.bis-service.baseUrl = http://${MY_DOMAIN:localhost}:14080/nss
@@ -135,59 +131,7 @@ gsr-business.flightdeck-url = http://${MY_DOMAIN:localhost}:11780/flightdeck/gs/
 gsr-service-connector.GeoServiceStub.geoService.password = geo
 gsr-service-connector.apache-service.baseUrl = http://${MY_DOMAIN:localhost}:10180"""
 
-[projects.nss]
-name = "NSS Service"
-description = "NSS Service is also named as native system service"
-remote_repo_url = "https://github.com/igt-playcasino/nss.git"
-working_branch = "6.10.0-develop"
-available_branches = []
-local_repo_path = 'D:\Workspace\GitHub\playcasino\nss'
-build_command = "mvn clean package -DskipTests"
-customized_build_command = 'mvn clean package -DskipTests -f nss\pom.xml'
-run_command = "mvn clean package -DskipTests"
-customized_run_command = "mvn clean package -DskipTests"
-debug_command = "mvn clean package -DskipTests"
-customized_debug_command = "mvn clean package -DskipTests"
-stop_command = "mvn clean package -DskipTests"
-startup_dependencies = []
-
-[projects.cache]
-name = "Cache Service"
-description = "The cache service."
-remote_repo_url = "https://github.com/igt-playcasino/cache.git"
-working_branch = "6.10.0-develop"
-available_branches = [
-    "6.10.0-develop",
-    "6.9.0-develop",
-    "6.9.0-release",
-]
-local_repo_path = 'D:\Workspace\GitHub\playcasino\cache'
-build_command = "mvn clean package -DskipTests"
-customized_build_command = 'mvn clean package -DskipTests -f cache\pom.xml'
-run_command = "mvn clean package -DskipTests"
-customized_run_command = 'java -jar -Dspring.config.additional-location=file:D:\Workspace\GitHub\playcasino\cache\6.10.0-develop-configuration\cache.properties cache\cache-hazelcast\target\cache-hazelcast-6.10.0-SNAPSHOT.jar'
-debug_command = "mvn clean package -DskipTests"
-customized_debug_command = "mvn clean package -DskipTests"
-stop_command = "mvn clean package -DskipTests"
-startup_dependencies = []
-customized_properties = """
-competition.datasource.url = jdbc:postgresql://rno-pg-db01.lab.wagerworks.com:5432/cptdev?stringtype=unspecified
-logging.level.root = DEBUG
-cec.db.user = cecdev17
-logging.pattern.console = %d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%t] [%c{1}] %msg%n
-cache-service.mainHazelcastConfigurationProperties.hz.network.port = 10701
-gsr.db.password = gsrdev17
-gsr.db.user = gsrdev17
-cec.db.jdbcUrl = jdbc:postgresql://rno-pg-db01.lab.wagerworks.com:5432/cecdev?stringtype=unspecified
-cec.db.password = cecdev17
-competition.datasource.password = cptdev17
-CACHE_HAZELCAST_QUORUM_SIZE = 2
-competition.datasource.username = cptdev17
-gsr.db.jdbcUrl = jdbc:postgresql://rno-pg-db01.lab.wagerworks.com:5432/gsrdev?stringtype=unspecified
-CACHE_HAZELCAST_QUORUM_ENABLED = false
-logging.pattern.file = %d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%t] [%c{1}] %msg%n
-cache-service.mainHazelcastConfigurationProperties.hz.cluster.name = cache_local
-"""
+[projects.gsr.branch_customized_properties]
 
 [projects.rgs]
 name = "RGS Platform"
@@ -210,7 +154,7 @@ debug_command = "mvn clean package -DskipTests"
 customized_debug_command = "mvn clean package -DskipTests"
 stop_command = "mvn clean package -DskipTests"
 startup_dependencies = []
-customized_properties = """
+default_customized_properties = """
 rgsConfiguration.refresh.enable = true
 ENV_NAME = zhangsan
 gsr.http.protocol = JSON
@@ -242,37 +186,70 @@ gls.http.timeout = 600000
 k1=v2
 """
 
-[projects.gls]
-name = "GLE Service"
-description = "The GLE service."
-remote_repo_url = "https://github.com/igt-playcasino/gls.git"
-working_branch = "6.10.0-develop"
-available_branches = []
-local_repo_path = 'D:\Workspace\GitHub\playcasino\gls'
-build_command = "mvn clean package -DskipTests"
-customized_build_command = 'mvn clean package -DskipTests -f gls\pom.xml'
-run_command = "mvn clean pacage -DskipTests"
-customized_run_command = "mvn clean package -DskipTests"
-debug_command = "mvn clean package -DskipTests"
-customized_debug_command = "mvn clean package -DskipTests"
-stop_command = "mvn clean package -DskipTests"
-startup_dependencies = []
+[projects.rgs.branch_customized_properties]
+"6.10.0-develop" = """
+rgsConfiguration.refresh.enable = true
+ENV_NAME = zhangsan
+gsr.http.protocol = JSON
+gsr.http.timeout = 1800000
+jrs.http.targetUrl = http://localhost:12880/jrs
+datagrid.hazelcast.interfaces = localhost
+datagrid.hazelcast.tcp-ip.member-list = localhost:5757
+gls.http.targetUrl = http://localhost:12680/gls
+gsr.http.targetUrl = http://localhost:10280/gsr/flow
+jpk.host = jps-dev08-pool.lab.wagerworks.com
+rgs.loadbalancer.url = http://localhost:10180
+jpk.port = 80
+environment.datacenterid = ZS
+environment.name = zhangsan777
+datagrid.hazelcast.gamelist-map.ttl-seconds = 3600
+datagrid.hazelcast.multicast.port = 54326
+customplugins.dir = D:/rgs/rgs680/rgs/rgs_home/plugins
+gls.outcome.cache.enabled = true
+hazelcast.client.clusterName = cache_zhangsan777
+hazelcast.client.networkConfig.addresses = localhost:10701
+jpkmeter.port = 443
+jpk.jpsintegrationenabled = Y
+datagrid.hazelcast.cluster.name = zhangsan_rgs80
+jpkmeter.sslindicator = ON
+jpk.sslindicator = OFF
+kafka.broker.list = localhost:9092
+jpkmeter.host = jps-dev08-meter.lab.wagerworks.com
+gls.http.timeout = 600000
+k1=v2
+"""
 
-[projects.pas]
-name = "PAS Service"
-description = "PAS Service is also named as player account service"
-remote_repo_url = "https://github.com/igt-playcasino/pas.git"
+[projects.cpt]
+name = "Competition Service"
+description = "Competition Service is one of the promotion service to make competitions."
+remote_repo_url = "https://github.com/igt-playcasino/competition.git"
 working_branch = "6.10.0-develop"
-available_branches = []
-local_repo_path = 'D:\Workspace\GitHub\playcasino\pas'
+available_branches = [
+    "6.10.0-develop",
+    "6.9.0-PR-4343",
+    "6.9.0-PR-4355",
+    "6.9.0-RGSHOTFIX-184",
+    "6.9.0-develop",
+    "6.9.0-release",
+    "RGS-31868---UTs-for-Competition-service",
+    "RGS-31868---UTs-for-Competition-service-common-PR",
+    "jeffer-cpt-6.9.0-PR4355",
+    "lilin/6.9.0-PR-4355-DB",
+    "lizhaowei/6.9.0-RGSHOTFIX-184",
+    "lizhaowei/6.9.0-release",
+    "wangnile/cpt-610",
+]
+local_repo_path = 'D:\Workspace\GitHub\playcasino\competition'
 build_command = "mvn clean package -DskipTests"
-customized_build_command = 'mvn clean package -DskipTests -f app\pom.xml'
+customized_build_command = "mvn clean package -DskipTests"
 run_command = "mvn clean package -DskipTests"
 customized_run_command = "mvn clean package -DskipTests"
 debug_command = "mvn clean package -DskipTests"
 customized_debug_command = "mvn clean package -DskipTests"
 stop_command = "mvn clean package -DskipTests"
 startup_dependencies = []
+
+[projects.cpt.branch_customized_properties]
 
 [projects.gles]
 name = "GLE 4.0 Service"
@@ -293,3 +270,77 @@ debug_command = "mvn clean package -DskipTests"
 customized_debug_command = "mvn clean package -DskipTests"
 stop_command = "mvn clean package -DskipTests"
 startup_dependencies = []
+
+[projects.gles.branch_customized_properties]
+
+[projects.jrs]
+name = "Jurisdiction Service"
+description = "The Jurisdiction service."
+remote_repo_url = "https://github.com/igt-playcasino/jrs.git"
+working_branch = "6.10.0-develop"
+available_branches = []
+local_repo_path = 'D:\Workspace\GitHub\playcasino\jrs'
+build_command = "mvn clean package -DskipTests"
+customized_build_command = "mvn clean package -DskipTests -f jrs/pom.xml"
+run_command = "mvn clean package -DskipTests"
+customized_run_command = "mvn clean package -DskipTests"
+debug_command = "mvn clean package -DskipTests"
+customized_debug_command = "mvn clean package -DskipTests"
+stop_command = "mvn clean package -DskipTests"
+startup_dependencies = []
+
+[projects.jrs.branch_customized_properties]
+
+[projects.gls]
+name = "GLE Service"
+description = "The GLE service."
+remote_repo_url = "https://github.com/igt-playcasino/gls.git"
+working_branch = "6.10.0-develop"
+available_branches = []
+local_repo_path = 'D:\Workspace\GitHub\playcasino\gls'
+build_command = "mvn clean package -DskipTests"
+customized_build_command = 'mvn clean package -DskipTests -f gls\pom.xml'
+run_command = "mvn clean pacage -DskipTests"
+customized_run_command = "mvn clean package -DskipTests"
+debug_command = "mvn clean package -DskipTests"
+customized_debug_command = "mvn clean package -DskipTests"
+stop_command = "mvn clean package -DskipTests"
+startup_dependencies = []
+
+[projects.gls.branch_customized_properties]
+
+[projects.ruleengine]
+name = "Rule Engine Service"
+description = "The Rule Engine service."
+remote_repo_url = "https://github.com/igt-playcasino/ruleengine.git"
+working_branch = "6.10.0-develop"
+available_branches = []
+local_repo_path = 'D:\Workspace\GitHub\playcasino\ruleengine'
+build_command = "mvn clean package -DskipTests"
+customized_build_command = "mvn clean package -DskipTests"
+run_command = "mvn clean package -DskipTests"
+customized_run_command = "mvn clean package -DskipTests"
+debug_command = "mvn clean package -DskipTests"
+customized_debug_command = "mvn clean package -DskipTests"
+stop_command = "mvn clean package -DskipTests"
+startup_dependencies = []
+
+[projects.ruleengine.branch_customized_properties]
+
+[projects.nss]
+name = "NSS Service"
+description = "NSS Service is also named as native system service"
+remote_repo_url = "https://github.com/igt-playcasino/nss.git"
+working_branch = "6.10.0-develop"
+available_branches = []
+local_repo_path = 'D:\Workspace\GitHub\playcasino\nss'
+build_command = "mvn clean package -DskipTests"
+customized_build_command = 'mvn clean package -DskipTests -f nss\pom.xml'
+run_command = "mvn clean package -DskipTests"
+customized_run_command = "mvn clean package -DskipTests"
+debug_command = "mvn clean package -DskipTests"
+customized_debug_command = "mvn clean package -DskipTests"
+stop_command = "mvn clean package -DskipTests"
+startup_dependencies = []
+
+[projects.nss.branch_customized_properties]

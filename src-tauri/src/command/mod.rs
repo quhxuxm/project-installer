@@ -57,13 +57,17 @@ async fn save_project_runtime_update(
             }
         })?;
     project.local_repo_path = project_runtime_update.local_repo_path.into();
-    project.working_branch = project_runtime_update.working_branch;
+    project.working_branch = project_runtime_update.working_branch.clone();
     project.remote_repo_url = project_runtime_update.remote_repo_url;
     project.customized_build_command = project_runtime_update.build_command;
     project.customized_run_command = project_runtime_update.run_command;
     project.customized_debug_command = project_runtime_update.debug_command;
-    project.customized_properties = project_runtime_update
-        .customized_properties;
+    project.branch_customized_properties.insert(
+        project_runtime_update.working_branch.clone(),
+        project_runtime_update
+            .customized_properties
+            .unwrap_or("".to_string()),
+    );
     project.available_branches = available_branches;
     save_tool_config(tool_config).map_err(|e| {
         error!("Fail to save project config: {e}");

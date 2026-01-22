@@ -32,7 +32,8 @@ pub struct ProjectConfig {
     pub stop_command: Option<String>,
     pub customized_stop_command: Option<String>,
     pub startup_dependencies: Vec<ProjectId>,
-    pub customized_properties: Option<String>,
+    pub default_customized_properties: Option<String>,
+    pub branch_customized_properties: HashMap<String, String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]

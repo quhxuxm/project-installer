@@ -64,7 +64,7 @@ async fn spawn_child_program(
     push_global_log_to_frontend(
         app_handle,
         project_id,
-        format!("Child process for [{command}] spawned, process id: {child_process_id}", ),
+        format!("Child process for [{command}] spawned, process id: {child_process_id}",),
         GlobalLogLevel::Info,
     );
     {
@@ -185,7 +185,7 @@ pub async fn spawn_build_process(
         CommandType::Build,
         child_process_status_tx,
     )
-        .await?;
+    .await?;
     PROJECT_CHILD_PROCESS_REPO
         .lock()
         .await
@@ -220,7 +220,7 @@ pub async fn spawn_stop_process(
                 push_global_log_to_frontend(
                     app_handle,
                     project_id,
-                    format!("Child process (building) for project [{project_id:?}] is killed.", ),
+                    format!("Child process (building) for project [{project_id:?}] is killed.",),
                     GlobalLogLevel::Info,
                 );
             }
@@ -231,7 +231,7 @@ pub async fn spawn_stop_process(
                 push_global_log_to_frontend(
                     app_handle,
                     project_id,
-                    format!("Child process (running) for project [{project_id:?}] is killed.", ),
+                    format!("Child process (running) for project [{project_id:?}] is killed.",),
                     GlobalLogLevel::Info,
                 );
             }
@@ -242,7 +242,7 @@ pub async fn spawn_stop_process(
                 push_global_log_to_frontend(
                     app_handle,
                     project_id,
-                    format!("Child process (debugging) for project [{project_id:?}] is killed.", ),
+                    format!("Child process (debugging) for project [{project_id:?}] is killed.",),
                     GlobalLogLevel::Info,
                 );
             }
@@ -273,7 +273,10 @@ pub async fn spawn_run_process(
     }
     let customized_properties_file = customized_cfg_dir.join(format!("{project_id}.properties"));
     let mut customized_properties_file = std::fs::File::create(customized_properties_file)?;
-    if let Some(properties_file_content) = &project_config.customized_properties {
+    if let Some(properties_file_content) = &project_config
+        .branch_customized_properties
+        .get(project_config.working_branch.as_str())
+    {
         customized_properties_file.write_all(properties_file_content.as_bytes())?;
     }
     let run_command = project_config
@@ -288,7 +291,7 @@ pub async fn spawn_run_process(
         CommandType::Run,
         child_process_status_tx,
     )
-        .await?;
+    .await?;
     PROJECT_CHILD_PROCESS_REPO
         .lock()
         .await
